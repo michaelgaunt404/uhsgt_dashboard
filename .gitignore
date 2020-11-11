@@ -1,0 +1,33 @@
+#dotfiles~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.RDataTmp
+
+#files~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#example: /name.extrension -> single file
+#example: *.extension -> all files with this extension
+*.RDataTmp
+*.RData
+*.zip
+*.csv
+*.xlsx
+
+#folders~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#example: name/ -> gets rid of folders with this name
+#example: name/** -> gets rid of all files in folder
+cache/
+data/
+output/
+tokens/
+cacensus_cache/
+kml/
+docs/
+
+application_shapefiles/
+corrdior_buffer/
+map_ready/
+mapedit_tmp/
+rsconnect/
+shapefiles_raw_cache/

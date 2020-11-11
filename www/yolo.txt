@@ -1,0 +1,36 @@
+
+<h1 style="text-align: Map Sub-setting and Metric Aggregation</h1>
+<p style="text-align: left;">This page allows the user to define new geometries that can be used to spatially filter the default corridor map with and produce aggregated US Census metrics. The subset returns all layers and features that it overlaps and removing all layers that it has no interaction with. Metrics for the remaining census tracts will be aggregated and returned to the user. The subset aggregates can be compared to the corridor level aggregates to investigate how user defined spatial subset deviates from the corridor as a whole.</p>
+<p style="text-align: left;">Use Example:  A user is interested in equity and a specific demographic's representation in a potential Right-of-Way (ROW). The user draws a line on the map representing the proposed ROW, the then have all the layers and features that their ROW overlaps with returned to them. They can investigate their question regarding equity with respect to the proposed ROW.</p>
+<p style="text-align: left;">How to use this page:</strong></p>
+<ul>
+<li style="text-align: left;">The user defines a new geometry  - polygons, lines, points, etc - using the left toolbar on the left hand map (see Spatially Filtered Maps tab)</li>
+<li style="text-align: left;">The user defines a buffer (default 1 mile) to be applied to their geometry (see top navbar) </li>
+<li style="text-align: left;">The user submits their selections and initiates the filtering and aggregation process by clicking the Filter button (see top Navbar)</li>
+<li style="text-align: left;">The user defined features and the resulting subset will be displayed on the right hand map (see) </li>
+<li style="text-align: left;">US Census metrics (corridor and subsets) are displayed on the Subset Plots and Subset Data tabs</li>
+</ul>
+<p style="text-align: left;">How to navigate this page:</strong></p>
+<ul>
+<li style="text-align: left;">Spatially Filtered Maps</li>
+<ul>
+<li style="text-align: left;">Default tab</li>
+<li style="text-align: left;">Displays two maps - the left is editable and the right displays those edits and returns buffered corridor map</li>
+</ul>
+<li style="text-align: left;">Subset Plot</li>
+<ul>
+<li style="text-align: left;">This tab displays plotted aggregated metrics given user geometries and corridor subset</li>
+<li style="text-align: left;">Both of these plots are interactive - zoom capabilities and hover tooltips</li>
+<li style="text-align: left;">The top plot displays the Percent Error/Difference between the corridor and corridor subset for all US Census variables</li>
+<ul>
+<li style="text-align: left;">E.g. 100*(Subset-Corridor)/Corridor</li>
+</ul>
+<li style="text-align: left;">The bottom plot displays the boxplots for the same metrics</li>
+</ul>
+<li style="text-align: left;">Subset Data</li>
+<ul>
+<li style="text-align: left;">This tab displays the same information  but in tabular form </li>
+<li style="text-align: left;">This table can be downloaded using the buttons on the top of the table</li>
+</ul>
+</ul>
+

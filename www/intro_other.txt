@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {color: #484848; 
+padding: 25px;
+box-sizing: border-box;}
+h1 {color: #484848;}
+h4 {color: #484848;}
+</style>
+</head>
+
+<body>
+<h1 style="text-align: center;">Cascadia UHSGT Corridor Planning Dashboard</h1>
+<h4 style="text-align: center;">An interactive, web-based tool to help explore the proposed UHSGT corridor.</h4>
+<hr />
+<p style="text-align: left;">The goal of this dashboard is to provide a high-level view of the entire corridor to aid and facilitate the planning of UHSGT in the Pacific Northwest.  
+The platform accomplishes this by displaying current transportation assets, political jurisdictions boundaries, and census data in an interactive map. 
+The map and dashboard were designed to be intuitive and user-friendly to </p>
+<hr />
+<p style="text-align: left;">&nbsp;<strong>What you can do with this dashboard:</strong></p>
+<ul>
+<li style="text-align: left;">Explore the Cascadia corridor given a variety of map layers relevant to UHSGT.&nbsp;</li>
+<li style="text-align: left;">Inspect aggregated census metrics for the corridor and by user defined by spatial subsets.&nbsp;</li>
+<li style="text-align: left;">Download data and metrics to share with colleagues offline.&nbsp;</li>
+<li style="text-align: left;">Understand important regional planning deadlines and publications.&nbsp;</li>
+</ul>
+<p style="text-align: left;">&nbsp;<strong>How to navigate this dashboard:</strong></p>
+<ul>
+<li style="text-align: left;">•	This dashboard has three tabs which are navigable via the sidebar (left).&nbsp;</li>
+<li style="text-align: left;">The <strong>Map Dashboard</strong> tab contains the corridor map and its own sidebar for map filtering controls.&nbsp;</li>
+<li style="text-align: left;">The <strong>Census Metrics</strong> tab contains a filterable corridor mini-map which returns aggregated census statistics which you can compare to the corridor aggregates.&nbsp;</li>
+<li style="text-align: left;">The <strong>Data Center</strong> tab contains all the data used to create the map and metrics tables.&nbsp;</li>
+<ul>
+      <li>The tables on this page contain direct links to the data sources so you may perform further investigation at you convenience.</li>
+</ul>
+<li style="text-align: left;">Understand important regional planning deadlines and publications.&nbsp;</li>
+</ul>
+</body>
+</html>
+
+
