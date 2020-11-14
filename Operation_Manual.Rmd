@@ -1,20 +1,22 @@
 ---
-# title: 
-title: |
-  ![](./www/flatart_long.jpg){width=9in}  
-  UHSGT Planning Dashboard \n Operation Manual
-author: Michael Gaunt mike.gaunt@wsp.com
-date: "2020-11-11"
-
+title: "![](./www/flatart_long.jpg){width=9in}"
+author: "Michael Gaunt mike.gaunt@wsp.com"
+date: '2020-11-11'
 output:
+  word_document:
+    toc: yes
+    toc_depth: '2'
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
   html_document:
+    number_sections: yes
     theme: cerulean
-    toc: true
-    number_sections: true
+    toc: yes
     toc_depth: 2
     toc_float:
-      collapsed: true
-      smooth_scroll: false
+      collapsed: yes
+      smooth_scroll: no
 ---
 
 ```{r setup, include=FALSE}
@@ -56,8 +58,9 @@ Left Sidebar
   + The Help Center does not link to a new page but help and information buttons
   
 Main Display
-* All select-able page links in the left sidebar will take the user to new main display page (except "Help Center")
-* The main display will generally be made up of containers that hold/show maps, plots, buttons, or inputs that the user can interact with
+
+* All clickable page links (except "Help Center") on the left sidebar  will take the user to new display page 
+* The main displays are made of containers that hold/show maps, plots, buttons, or inputs that the user can interact with
 
 ## Dashboard Pages
 This section describes in more detail the different pages of the dashboard and their functionality. 
@@ -106,9 +109,9 @@ This page is composed of two containers - the top input container and the lower 
   + This tab contains a table detailing which census tracts were selected by the subset 
   + The data in this table can also be downloaded and should be downloaded along with the tabular metrics above
 
-#### Process Description 
+#### Subset Process Description 
 
-* The user defines a new geometry - polygons, lines, points, etc - using the left toolbar on the left hand map (see Spatially Filtered Maps tab) 
+* The user defines a new geometry - polygons, lines, points, etc - using the left toolbar on the left hand map (see Spatially Filtered Maps tab)
 * The user defines a buffer (default 1 mile) to be applied to their geometry (see top Navbar) 
 * The user submits their selections and initiates the filtering and aggregation process by clicking the <strong>Filter Default Map</strong> button (see Navbar above)
 * The user defined features and the resulting subset will be displayed on the right hand map (see) 
@@ -117,7 +120,47 @@ This page is composed of two containers - the top input container and the lower 
 
 
 ### MPO/RTPO Map 
+This page contains infromation about the regional agencies responsible for tranpostrtion planning along the corridor. In the US, regional transportaion planning is pefromed by metropolitan planning organizations (MPO) or regional transportion planning orgainizations (RTPO) - these organizations are federally mandated and federally funded and are inplace to esnsure regional cooperation with regards to transportion planning. This layer of governance directs and allocates investements for tranprotaion projects, establish shared vision and goals for the future of the redion, and act as a conduit that faccilliate collaboration betweeen residents, interested parties, and other levels of govenerment both at the federal, state, and local levels. In acting in the capacity stated above, regional transporation planners produce a number of publications which detail both short-range project funding and long-range transportaaion palnning - documents are the Transporation Imporvement Program (TIP) and the Regional Transporation Plan (RTP), respectively. These documents are important cornerstones in the foundation of regional planning and tracking these documents, their content, and when they are to be renewed will be vitally important to XXXXXXXXXXXXXXXX
+
+The page details re
+
+
 ### Data Center 
+This page allows the user to examine and retreive the data contained in the base map. This page contains two tables - the left hand table contains information on all the layers which are currnetly included in the base map and the right hand table details the information contained in each layer. All layers have been previously processed in order to remove superflous information, clean or reconstruct data of poor quality, spatially buffer to limit the original extent of the data, or two combine similar data that were retreived from sepeate sources. Links are provided to the data's original source as well as features that allow the user to download the processed data. 
+
+Default Map Data Layers table
+
++ Contains information for all layers in base map
++ Contains notes on the data layer - enabled by user click
++ Contains links to the original data source - enabled by user click
++ Clicking on a singular data layer will select that layer to be displayed in the righhand table
++ The contents of this table can be downloaded or copied by using the buttons at the top of the table
+
+Raw Data for Selected Layer
+
++ Displays the data for the layer selected via user row selection of the left hand table
++ Displays all the information for selected layer that is shown in the base map 
++ The contents of this table can be downloaded or copied by using the buttons at the top of the table
+
+
 ### Help Center
-## Sharing
+Selecting this menu item will not generate a new diaplay window but will two buttons directly below in the sidebar menu. These buttons redisplay the into-modal seen when the page first loads and takes you to this document.
+
+## Sharing this Dashboard
+This dashboard's main intent is to enable UHSGT planners to xxxxxxxxxxxxxxxxxxx such that they can identify stakeholders at the corridor level early in the planning process. This dashboard was not meant to be public facing product or made for the use by the general public. Users who have been granted access to this dashboard should ask for permission before sharing this with others. Please contact your WSDOT repersentative. 
+
+
+## General Use
+
+
+
+
+
+
+
+
+
+
+
+
 

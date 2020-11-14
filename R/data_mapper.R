@@ -30,11 +30,11 @@ processed_shape_files = read_xlsx('data_source_list.xlsx',
             read_xlsx('data_source_list.xlsx', 
                       sheet = "tidycensus") %>%  
               data.table() %>%  
-              .[,.(processed_name, selection, selected_new, zcol, notes, group, name, var_name)],
+              .[,.(processed_name, selection, selected_new, zcol, notes, group, name, var_name, src_url)],
             read_xlsx('data_source_list.xlsx', 
                        sheet = "ca_census") %>%  
               data.table() %>%  
-              .[,.(processed_name, selected_new, zcol, notes)]) %>% 
+              .[,.(processed_name, selected_new, zcol, notes, src_url)]) %>% 
   unique() %>%  
   remove_empty("rows")
 # 
@@ -143,6 +143,90 @@ mpo_spatial = which(map_ready$processed_name %in% "MPO_RTPOs") %>%
   map_files_dfs[.] %>%  
   .[[1]]
 
+#SECTION: CENSUS_SUBSET_METRICS===============================================
+#set up====
+index_clmn_rmv = c("Data Source", "Plain", "Geometry", "selected_")
+
+notshared_census = which(map_ready$processed_name %in% "US_Census") %>%
+  map_files_dfs[[.]]
+
+map_ready[which(map_ready$processed_name %in% "US_Census"), ]
+
+notshared_gg_tmp = notshared_census %>%
+  data.frame() %>%
+  set_names(c(colnames(notshared_census))) %>%
+  select(!all_of(index_clmn_rmv[-length(index_clmn_rmv)])) %>%
+  data.table()
+
+index_numeric_columns_gg = notshared_gg_tmp %>%
+  modify(as.character) %>%
+  modify(as.numeric) %>%
+  remove_empty("cols") %>%
+  colnames()
+
+notshared_gg_tmp = melt(notshared_gg_tmp,
+                        id.vars = c("Tract", "County", "State"),
+                        measure.vars = index_numeric_columns_gg) %>%
+  mutate(type = "Corridor")
+
+mpo_census_merge = sf:::aggregate.sf(notshared_census[, index_numeric_columns_gg], 
+                         mpo_spatial, 
+          FUN = "mean", na.rm = TRUE)
+
+mpo_census_merge_df = mpo_census_merge %>% 
+  mutate(`Area` = st_area(geometry) %>%  
+           set_units(km^2) %>% 
+           round(2)) %>%  
+  merge(mpo_spatial %>%  
+          mutate(`Area` = st_area(Geometry) %>%  
+                   set_units(km^2) %>% 
+                   round(2)) %>%  
+          select(Name, `Area`) %>% 
+          st_set_geometry(NULL), by = "Area") %>%  
+  select(Name, everything()) %>%  
+  st_set_geometry(NULL) %>%  
+  rename(`Area (sq. km)` = "Area") %>% 
+  mutate_at(index_numeric_columns_gg, round, 2)
+
+mpo_df_alt = read_xlsx("MPO_resource_table.xlsx") %>%  
+  remove_empty(c("cols", "rows")) %>%  
+  na_if("NA") %>% 
+  mutate(Date = convert_to_date(Date), 
+         Name = paste0(Key, " (", Acronym, ")")) %>% 
+  data.table() %>%  
+  mutate(html_link = str_glue("<a href = \"{Pub_Web}\"> Link to document </a>"))
+
+mpo_df_alt_soonest_10 = mpo_df_alt %>% 
+  filter(Type != "LRP") %>%  
+  filter(!is.na(Type)) %>% 
+  mutate(months_to_next = ifelse(Type == "Tip", 12, 48),
+         Date = Date+months(months_to_next),
+         Status = ifelse(Date>Sys.Date(), "Upcoming", "Past"), 
+         `Days Until` = Date - Sys.Date()) %>% 
+  filter(Status == "Upcoming") %>% 
+  arrange(Date) %>%  
+  select(-Status) %>%  
+  head(10) %>% 
+  rename(`MPO/RTPO` = "Acronym", 
+         `Renewal Date` = "Date" ) %>% 
+  select(`MPO/RTPO`, Type, `Renewal Date`, html_link) %>%
+  datatable(
+    escape = F,
+    selection = "single",
+    options = list( 
+      pageLength = 900,
+      initComplete = JS(
+        "function(settings, json) {",
+        "$('body').css({'font-family': 'Calibri'});",
+        "}")
+    )
+  )
+
+
+
+
+
+colnames(mpo_df_alt)
 mpo_df = read_xlsx("MPO_resource_table.xlsx") %>%  
   remove_empty(c("cols", "rows")) %>%  
   na_if("NA") %>% 

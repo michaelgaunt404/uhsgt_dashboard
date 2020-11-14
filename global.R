@@ -17,6 +17,7 @@ library(sf)
 library(mapview)
 library(leaflet)
 library(leafpop)
+library(units)
 
 library(data.table)
 library(tidyverse)
@@ -64,6 +65,8 @@ corrdior_buffer = readOGR("corrdior_buffer",
 
 #initializes custom funcitons~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+operation_manual = "https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.html"
+
 inline = function (x) {
   tags$div(style="display:inline-block;", x)
 }

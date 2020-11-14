@@ -86,9 +86,9 @@ body {color: #484848;=}
 </head>
 
 <body>
-<p style="text-align: center;"><span style="color: #000000;"> For support, issue reporting, or for features you\'d like to see - contact: michael.gaunt@wsp.com or vist the project <a href="https://github.com/michaelgaunt404/GEOCDR">GIT repo</a></span></p>
-  <p style="text-align: center;"><strong>Need more help?</strong> <a href="https://wsponline-my.sharepoint.com/:w:/g/personal/nicholas_richter_wsp_com/EXFdg_4V-LRDqr-lNXurfwgBHXnMj9cbJyKWGTn0fHu-fw">Download our instruction manual here.</a></p>
-  <p style="text-align: center;"><strong><span style="color: #ff0000;">IMPORTANT: This is for internal use only. </span></strong></p>
+<p style="text-align: center;"><span style="color: #000000;"> For support, issue reporting, or for features you\'d like to see included in the next release - contact: michael.gaunt@wsp.com, your UHSGT corridor planning contact or vist the project\'s <a href="https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.html">GIT repo</a></span></p>
+  <p style="text-align: center;"><strong>Need more help?</strong> <a href="https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.html">Download our instruction manual here.</a></p>
+  <p style="text-align: center;"><strong><span style="color: #ff0000;">IMPORTANT: This is for internal use only - please check with your UHSGT corridor planning contact before sharing. </span></strong></p>
   </body>
   </html>'
 
@@ -163,12 +163,8 @@ map_edit_tab_info =
   HTML()
 
 
-
-
-
-
-
-
-
+mpo_drop_down = "This plot was created by merging the UC Census and the MPO spatail layers. 
+The metrics  shown in this table are mean aggregations of the US Census metrics for census tracts contained in each MPO jurisdiction. 
+These metrics should be considered as estimates - the spatial boundaries for each layer do not align perfectly given the fidelity of US Census layer. "
 
 

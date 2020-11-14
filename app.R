@@ -5,6 +5,7 @@ source("./R/data_scripts.R")
 # Define UI for data upload app ----
 
 ui = dashboardPagePlus(
+  useShinyalert(),
   #Header==============================================================================================================================================================================
   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   header = dashboardHeaderPlus(
@@ -13,28 +14,6 @@ ui = dashboardPagePlus(
       img(src = "trains.svg")),
     fixed = TRUE,
     enable_rightsidebar = F
-    # ,
-    # rightSidebarIcon = "gears",
-    # left_menu = tagList(
-    #   dropdownBlock(
-    #     id = "mydropdown",
-    #     title = "About",
-    #     icon = icon("sliders")
-    #   ),
-    #   dropdownBlock(
-    #     id = "mydropdown2",
-    #     title = "Help",
-    #     icon = icon("question-circle"),
-    #     actionButton("btn","Take Tour", icon("question-circle"), 
-    #                  style="color: #fff; background-color: #337ab7; border-color: #2e6da4"), 
-    #     actionButton(inputId='ab1', label="Learn More", 
-    #                  icon = icon("th"), 
-    #                  onclick ="window.open('https://www.youtube.com/watch?v=H6wl-EyhXl0', '_blank')")
-    #   )
-    # ),
-    # dropdownMenu(
-    #   icon = icon("envelope")
-    # )
   ),
   
   #Sidebar==============================================================================================================================================================================
@@ -63,10 +42,11 @@ ui = dashboardPagePlus(
                                                              # size = "xs", block = F, 
                                                              icon("info")
                                                   ),
-                                                  actionButton(inputId = "learn_more", label = "Learn More",
+                                                  actionButton(inputId = "learn_more", label = "Operation Manual",
                                                              # color = "primary", style = "unite", 
                                                              # size = "xs", block = F, 
-                                                             icon("th")
+                                                             icon("th"), 
+                                                             onclick = "window.open('https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.html', '_blank')"
                                                   )
                                          )
                                          
@@ -140,10 +120,9 @@ ui = dashboardPagePlus(
               setShadow(class = "dropdown-menu"),
               fluidRow(box(height = 20)),
               fluidRow(
-                column(width = 2, actionButton("map_btn_filter","Map Editing Info", icon("question-circle"), block = T),
-                       actionButton("save", "Filter Default Map", icon("filter")),
+                column(width = 2, actionButton("map_btn_info","Map Editing Info", icon("question-circle"), block = T),
+                       actionButton("map_btn_filter", "Filter Default Map", icon("filter")),
                        downloadButton("download_shapefile", "Download User Geometry")
-
                 ),
                 # column(width = 1, actionButton("save", "Filter Map", icon("filter"))),
                 column(width = 2, sliderInput('rad_input', "Filter Radius (miles)", min = 1, max = 15, value = 2)),
@@ -194,18 +173,21 @@ ui = dashboardPagePlus(
       tabItem("mpo",
               setShadow(class = "dropdown-menu"),
               fluidRow(box(height = 20)),
+              # fluidRow(
+                boxPlus(width = "100%", height = 600, title = "MPO Basic Statistics",
+                        closable = F, collapsible = F, collapsed = F, 
+                        status = "primary", solidHeader = T,
+                        enable_sidebar = T, sidebar_content = mpo_drop_down,
+                        dataTableOutput("mpo_table_with_census") %>%  withSpinner()),
+              # ),
               fluidRow(
                 column(width = 4,
                        boxPlus(closable = F, collapsible = F, collapsed = F, 
                                width = "100%", solidHeader = F, status = "primary",
-                               boxPlus(closable = F, collapsible = T, collapsed = F, 
-                                       width = "100%", solidHeader = T, status = "primary",
-                                       title = "MPO Basic Statistics",
-                                       dataTableOutput("mpo_table") %>%  withSpinner()),
                                boxPlus(closable = F, collapsible = T, collapsed = T, 
                                        width = "100%", solidHeader = T, status = "primary",
-                                       title = "Next 6 Renewed Publications",
-                                       dataTableOutput("mpo_table_time") %>%  withSpinner()),
+                                       title = "Next 10 Renewed Publications",
+                                       dataTableOutput("mpo_df_alt_soonest_10") %>%  withSpinner()),
                                boxPlus(collapsed = T, title = "Tracked Documents", 
                                        closable = FALSE, status = "primary", 
                                        solidHeader = T, collapsible = TRUE,
@@ -216,7 +198,7 @@ ui = dashboardPagePlus(
                 ),
                 column(width = 8,
                        fluidRow(
-                         wellPanel(height = tab_mtrcs_tpbx_hght+100,
+                         wellPanel(height = tab_mtrcs_tpbx_hght+400,
                                    timevisOutput("mpo_plot_timeline") %>%  withSpinner()
                          ), 
                          fluidRow()
@@ -309,13 +291,20 @@ server <- function(input, output) {
   })
   
   #Mapedit modal
-  observeEvent(input$map_btn_filter, {
+  observeEvent(input$map_btn_info, {
     showModal(modalDialog(
       wellPanel(
       map_edit_tab_info),
       size = "l",
       easyClose = TRUE
     ))
+  })
+  # library(shinyalert)
+  #Mapedit input received
+  observeEvent(input$map_btn_filter, {
+    shinyalert(title = "Input Received!", type = "success",
+               showConfirmButton = T, closeOnEsc = T,
+               closeOnClickOutside = T,)
   })
   
   #get leaflet shown features setup and observers
@@ -435,14 +424,18 @@ server <- function(input, output) {
     if(!identical(geom, edits()$finished)){
       geom <<- edits()$finished 
         
-      observeEvent(input$save, {
-        print("auto_3")   
+      observeEvent(input$map_btn_filter, {
         if (!is.null(geom)) {
-          assign('tmp_shapefile', geom, envir = .GlobalEnv)
-          write_sf(geom, './mapedit_tmp/tmp_shapefile.shp', delete_layer = TRUE, delete_dsn = TRUE)
           
-          tmp_buffer = read_sf('./mapedit_tmp/tmp_shapefile.shp') %>%
-              buffer_cleaner((input$rad_input)*1609.34)
+          # assign('tmp_shapefile', geom, envir = .GlobalEnv)
+          # st_write(geom, './mapedit_tmp/tmp_shapefile.shp', 
+          #          delete_layer = TRUE, delete_dsn = TRUE)
+  
+          # tmp_buffer = read_sf('./mapedit_tmp/tmp_shapefile.shp') %>%
+          #     buffer_cleaner((input$rad_input)*1609.34)
+          
+          tmp_buffer = geom %>%
+            buffer_cleaner((input$rad_input)*1609.34)
           
           data_for_plot = notshared_census %>%  
             st_filter(., tmp_buffer) %>% 
@@ -619,9 +612,49 @@ server <- function(input, output) {
               hideGroup(hide_layer_list_edit) %>% 
               base_map_options() 
           })
-
+          
+          geom = geom %>%  
+            mutate(feature_type = feature_type %>%  
+                     str_replace("rectangle", "polygon") %>% 
+                     str_remove("circle"))
+          
+          if ((geom$feature_type %>% unique() %>%  length()) > 1) {
+            tmp_data_sf_collection = data.frame(feature_types = c("POLYGON", "POINT", "LINESTRING"), 
+                                                stringsAsFactors = F) %>%  
+              group_by(feature_types) %>%  
+              nest() %>%  
+              mutate(data = map(feature_types, function(x) x %>%  
+                                  st_collection_extract(geom, .)),
+                     nrow = map(data, nrow)
+              ) %>%  
+              unnest(cols = nrow) %>%  
+              filter(nrow > 0) 
+            
+            unlink("./mapedit_tmp/*")
+            
+            list(tmp_data_sf_collection$feature_types, 
+                 tmp_data_sf_collection[["data"]]) %>%  
+              pmap(function(x, y) y %>%  
+                     st_write(str_glue('./mapedit_tmp/usr_geometry_{format(Sys.time(), "%y%m%d_%H%M")}_{x}.shp')))
+          } else {
+            unlink("./mapedit_tmp/*")
+            
+            geom %>%  
+              st_write(str_glue('./mapedit_tmp/usr_geometry_{format(Sys.time(), "%y%m%d_%H%M")}.shp'))
+          }
+          
+          output$download_shapefile <- downloadHandler(
+            filename = function() {
+              paste0("usrftr_", Sys.time(), ".tar") %>%
+                str_remove_all(":") %>%
+                str_remove_all("-") %>%
+                str_replace_all(" ", "_")
+            },
+            content <- function(file) {
+              tar(file, "mapedit_tmp")
+            }
+          )
         }
-        
       })
     }
   })
@@ -629,44 +662,29 @@ server <- function(input, output) {
   
   #SECTION: MPO_OBJECTS=========================================================
   #mpo_summary_table=====
-  output$mpo_table = renderDataTable({
-    mpo_df %>%  
-      select(Name, `Population Estimate`, `Area (mi^2)`) %>%  
-      arrange(desc(`Population Estimate`)) %>% 
-      mutate(`Denisty Estimate` = round(`Population Estimate`/`Area (mi^2)`, 2)) %>% 
+  output$mpo_table_with_census = renderDataTable({
+
+    mpo_census_merge_df %>%
+      set_names(str_trunc(names(.), 20, "right")) %>% 
       unique() %>%  
-      datatable(escape = F, 
-                options = list(
-                  dom = 'Brt',
-                  initComplete = JS(
-                    "function(settings, json) {",
-                    "$('body').css({'font-family': 'Calibri'});",
-                    "}"
-                  )))
+      datatable(
+        escape = F,
+        selection = "single",
+        extensions = 'Buttons', 
+        options = list(
+          scrollY = 370, pageLength = 900,
+          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+          initComplete = JS(
+            "function(settings, json) {",
+            "$('body').css({'font-family': 'Calibri'});",
+            "}")
+        )
+      ) 
   })
   
   #mpo_upcoming_publish_table=====
-  output$mpo_table_time = renderDataTable({
-    mpo_df %>%  
-      select(Acronym, Type, Date) %>%
-      mutate(Date = Date+months(48),
-             Status = ifelse(Date>Sys.Date(), "Upcoming", "Past"), 
-             `Days Until` = Date - Sys.Date()) %>%  
-      filter(Status == "Upcoming") %>% 
-      arrange(Date) %>%  
-      select(-Status) %>%  
-      head() %>%  
-      rename(`MPO/RTPO` = "Acronym", 
-             `Renewal Date` = "Date" ) %>% 
-
-    datatable(escape = F, 
-              options = list(
-                dom = 'Brt',
-                initComplete = JS(
-                  "function(settings, json) {",
-                  "$('body').css({'font-family': 'Calibri'});",
-                  "}"
-                )))
+  output$mpo_df_alt_soonest_10 = renderDataTable({
+    mpo_df_alt_soonest_10 
   })
   
   #mpo_tracking_plot=====
@@ -708,29 +726,29 @@ server <- function(input, output) {
       timevis(., groups, height = 500)
   })
 
-  #SECTION: CENSUS_SUBSET_METRICS===============================================
-  #set up====
-  index_clmn_rmv = c("Data Source", "Plain", "Geometry", "selected_")
-
-  notshared_census = which(map_ready$processed_name %in% "US_Census") %>%
-    map_files_dfs[[.]]
-
-  notshared_gg_tmp = notshared_census %>%
-    data.frame() %>%
-    set_names(c(colnames(notshared_census))) %>%
-    select(!all_of(index_clmn_rmv[-length(index_clmn_rmv)])) %>%
-    data.table()
-
-  index_numeric_columns_gg = notshared_gg_tmp %>%
-    modify(as.character) %>%
-    modify(as.numeric) %>%
-    remove_empty("cols") %>%
-    colnames()
-
-  notshared_gg_tmp = melt(notshared_gg_tmp,
-                          id.vars = c("Tract", "County", "State"),
-                          measure.vars = index_numeric_columns_gg) %>%
-    mutate(type = "Corridor")
+  # #SECTION: CENSUS_SUBSET_METRICS===============================================
+  # #set up====
+  # index_clmn_rmv = c("Data Source", "Plain", "Geometry", "selected_")
+  # 
+  # notshared_census = which(map_ready$processed_name %in% "US_Census") %>%
+  #   map_files_dfs[[.]]
+  # 
+  # notshared_gg_tmp = notshared_census %>%
+  #   data.frame() %>%
+  #   set_names(c(colnames(notshared_census))) %>%
+  #   select(!all_of(index_clmn_rmv[-length(index_clmn_rmv)])) %>%
+  #   data.table()
+  # 
+  # index_numeric_columns_gg = notshared_gg_tmp %>%
+  #   modify(as.character) %>%
+  #   modify(as.numeric) %>%
+  #   remove_empty("cols") %>%
+  #   colnames()
+  # 
+  # notshared_gg_tmp = melt(notshared_gg_tmp,
+  #                         id.vars = c("Tract", "County", "State"),
+  #                         measure.vars = index_numeric_columns_gg) %>%
+  #   mutate(type = "Corridor")
 
   # shared_census = which(map_ready$processed_name %in% "US_Census") %>%
   #   map_files_dfs[[.]] %>%
@@ -760,21 +778,28 @@ server <- function(input, output) {
   })
   
   output$data_overview = renderDataTable({
-    map_ready %>%  
+    map_ready %>%
       select(processed_name, group, notes, src_url) %>%
-      set_names(c("Layer", "Layer Group", "Notes", "Source URL")) %>% 
-      datatable(escape = F, 
-                selection = "single",
-                fillContainer = T, 
-                options = list(extensions = c('Buttons'),
-                               scrollY = TRUE,
-                               pageLength = 900,
-                               dom = 'Bfrtip',
-                               buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                               initComplete = JS(data_table_fromat)
-                ))
+      set_names(c("Layer", "Layer Group", "Notes", "Source URL")) %>%
+      datatable(
+        escape = F,
+        fillContainer = T,
+        selection = "single",
+        extensions = 'Buttons', 
+        options = list(
+          scrollY = T, pageLength = 900,
+          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+          initComplete = JS(
+            "function(settings, json) {",
+            "$('body').css({'font-family': 'Calibri'});",
+            "}")
+        )
+      )
+
   })
   
+  
+
   output$data_select = renderDataTable({
     req(input$data_overview_rows_selected)
     
@@ -782,29 +807,33 @@ server <- function(input, output) {
       data.frame() %>% 
       data.table() %>% 
       .[, -c("Plain", "Geometry")] %>% 
-      datatable(escape = F, 
-                fillContainer = T, 
-                selection = "none",
-                options = list(dom = 'Bfrti',
-                               extensions = c('Buttons'),
-                               scrollY = TRUE,
-                               pageLength = 900,
-                               buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                               initComplete = JS(data_table_fromat)
-                               ))
+      datatable(
+        escape = F,
+        selection = "single",
+        extensions = 'Buttons', 
+        options = list(
+          scrollY = 700, pageLength = 900,
+          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+          initComplete = JS(
+            "function(settings, json) {",
+            "$('body').css({'font-family': 'Calibri'});",
+            "}")
+        )
+      )
   })
   
-  output$download_shapefile <- downloadHandler(
-    filename = function() {
-      paste0("usrftr_", Sys.time(), ".tar") %>%
-        str_remove_all(":") %>%
-        str_remove_all("-") %>%
-        str_replace_all(" ", "_")
-    },
-    content <- function(file) {
-      tar(file, "mapedit_tmp")
-    }
-  )
+  # output$download_shapefile <- downloadHandler(
+  #   filename = function() {
+  #     paste0("usrftr_", Sys.time(), ".tar") %>%
+  #       str_remove_all(":") %>%
+  #       str_remove_all("-") %>%
+  #       str_replace_all(" ", "_")
+  #   },
+  #   content <- function(file) {
+  #     tar(file, "mapedit_tmp")
+  #   }
+  # )
+  
   observe({
     print("STOP")
   input$data_overview_rows_selected %>%  
