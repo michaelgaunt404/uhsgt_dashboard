@@ -37,16 +37,6 @@ processed_shape_files = read_xlsx('data_source_list.xlsx',
               .[,.(processed_name, selected_new, zcol, notes, src_url)]) %>% 
   unique() %>%  
   remove_empty("rows")
-# 
-# yolo = readOGR("map_ready/CA_Census", 
-#         "CA_Census") %>%  
-#   st_as_sf()
-# 
-# yolo =read_xlsx('data_source_list.xlsx', 
-#           sheet = "ca_census") %>%
-#   select(var_name) %>% 
-#   data.table() %>%  
-#   .[,.(processed_name, selection, selected_new, zcol, notes, group, name, var_name)]
 
 #makes census index object - only takes from the "US_Census" group
 census_selection_index = processed_shape_files %>% 
@@ -139,7 +129,7 @@ map_files_dfs = list(map_ready$processed_name,
   )
 
 #MPO PLOTS======================================================================
-mpo_spatial = which(map_ready$processed_name %in% "MPO_RTPOs") %>%  
+mpo_spatial = which(map_ready$processed_name %in% "Regional_Planning") %>%  
   map_files_dfs[.] %>%  
   .[[1]]
 
@@ -209,63 +199,47 @@ mpo_df_alt_soonest_10 = mpo_df_alt %>%
   head(10) %>% 
   rename(`MPO/RTPO` = "Acronym", 
          `Renewal Date` = "Date" ) %>% 
-  select(`MPO/RTPO`, Type, `Renewal Date`, html_link) %>%
-  datatable(
-    escape = F,
-    selection = "single",
-    options = list( 
-      pageLength = 900,
-      initComplete = JS(
-        "function(settings, json) {",
-        "$('body').css({'font-family': 'Calibri'});",
-        "}")
-    )
-  )
+  select(`MPO/RTPO`, Type, `Renewal Date`, html_link) 
 
-
-
-
-
-colnames(mpo_df_alt)
-mpo_df = read_xlsx("MPO_resource_table.xlsx") %>%  
-  remove_empty(c("cols", "rows")) %>%  
-  na_if("NA") %>% 
-  mutate(Date = convert_to_date(Date), 
-         Name = paste0(Key, " (", Acronym, ")")) %>%  
+mpo_df = read_xlsx("MPO_resource_table.xlsx") %>%
+  remove_empty(c("cols", "rows")) %>%
+  na_if("NA") %>%
+  mutate(Date = convert_to_date(Date),
+         Name = paste0(Key, " (", Acronym, ")")) %>%
   merge(., data.frame(mpo_spatial) , by = "Name") %>%
   rename(#`Population Estimate` = Population.Estimate,
-         `Area (mi^2)` = Area...Mi.2.) %>%  
-  mutate(`Area (mi^2)` = round(`Area (mi^2)`,0), 
+         `Area (mi^2)` = Area...Mi.2.) %>%
+  mutate(`Area (mi^2)` = round(`Area (mi^2)`,0),
          `Document\nStatus:` = ifelse(is.na(Date), "Missing", "Obtained"))
-
-mpo_timeline = mpo_df %>%
-  mutate(id = as.numeric(rownames(.)), 
-         end = NA, 
-         Date = Date + months(48),
-         content = paste(Acronym, Type, sep = "-")) %>% 
-  select(id, content, Date, end, Type) %>%
-  mutate(qtr = Date %>%  floor_date("quarter")) %>%
-  arrange(qtr, content) %>%
-  mutate(order = 1) %>%
-  group_by(qtr) %>%
-  mutate(order = cumsum(order),
-         text = str_glue("{content} {Date}")) %>%
-  filter(Type != "LRP") %>% 
-  filter(!is.na(Type)) %>% 
-  ggplot() +
-  geom_point(aes(qtr, order, color = as.factor(Type),
-                 text = text),
-             size = 6) +
-  ylim(0,5) +
-  labs(x = "", y = "", color = "Publication") +
-  theme +
-  theme(legend.position="bottom")
-
-mpo_timeline = mpo_timeline %>%
-  ggplotly(tooltip = "text") %>%
-  layout(legend = list(
-    orientation = "h")
-  )
+# 
+# mpo_timeline = mpo_df %>%
+#   mutate(id = as.numeric(rownames(.)), 
+#          end = NA, 
+#          Date = Date + months(48),
+#          content = paste(Acronym, Type, sep = "-")) %>% 
+#   select(id, content, Date, end, Type) %>%
+#   mutate(qtr = Date %>%  floor_date("quarter")) %>%
+#   arrange(qtr, content) %>%
+#   mutate(order = 1) %>%
+#   group_by(qtr) %>%
+#   mutate(order = cumsum(order),
+#          text = str_glue("{content} {Date}")) %>%
+#   filter(Type != "LRP") %>% 
+#   filter(!is.na(Type)) %>% 
+#   ggplot() +
+#   geom_point(aes(qtr, order, color = as.factor(Type),
+#                  text = text),
+#              size = 6) +
+#   ylim(0,5) +
+#   labs(x = "", y = "", color = "Publication") +
+#   theme +
+#   theme(legend.position="bottom")
+# 
+# mpo_timeline = mpo_timeline %>%
+#   ggplotly(tooltip = "text") %>%
+#   layout(legend = list(
+#     orientation = "h")
+#   )
 
 #FINAL MAPPING==================================================================
 #i dont believe these area used at all

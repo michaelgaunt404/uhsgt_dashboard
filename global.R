@@ -39,7 +39,7 @@ library(viridis)
 library(DT)
 library(ggdark)
 
-library(crosstalk)
+library(shinyalert)
 library(shiny)
 library(shinycssloaders)
 library(shinyWidgets)
@@ -213,7 +213,7 @@ base_map_options = function(map){
   map %>%  
     setView(-120.207, 46.223, zoom = 7) %>% 
     addMeasure(
-      position = "bottomleft",
+      position = "bottomright",
       activeColor = "#3D535D",
       completedColor = "#7D4479") %>%
     addMiniMap(
@@ -228,3 +228,15 @@ tab_mtrcs_plttab_hght = 400
 data_table_fromat = '"function(settings, json) {",
 "$(\'body\').css({\'font-family\': \'Calibri\'});",
 "}"'
+
+
+filter_sf <- function(.data, xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL) {
+  bb <- sf::st_bbox(.data)
+  if (!is.null(xmin)) bb["xmin"] <- xmin
+  if (!is.null(xmax)) bb["xmax"] <- xmax
+  if (!is.null(ymin)) bb["ymin"] <- ymin
+  if (!is.null(ymax)) bb["ymax"] <- ymax
+  sf::st_filter(.data, sf::st_as_sfc(bb), .predicate = sf::st_within)
+}
+
+

@@ -4,11 +4,9 @@
 #
 # By: mike gaunt, michael.gaunt@wsp.com
 #
-# README: This script processes raw shapefiles and puts them into application_shapefiles
+# README: This script processes raw shapefiles in application_shapefiles and makes them ready for mapping
 #-------- this process is driven by "data_source_list" excel file
-#-------- it requires there be a "shapefiles_raw_cache" folder for shapefiles to be processed
-#-------- script performs applies filtering to keep or drop files
-#-------- spatially filters sf objects and selects columns to keep
+#-------- perfroms manual process to clean and add items to sf objects 
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -16,85 +14,17 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(magrittr)
 
-if (!exists("BEING_SOURCED_FROM_SOMEWHERE")){
-  setwd("~/")
-  rstudioapi::getSourceEditorContext()$path %>%
-    as.character() %>%
-    gsub("/R.*","\\1", .) %>%
-    path.expand() %>%
-    setwd()
-}
-
-# filepath_to_shapefiles = "./data/shapefiles"
-filepath_to_shapefiles = "./shapefiles_raw_cache"
-
-#sourcing utility script~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("global.R")
-
-#data import~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# if (!exists("BEING_SOURCED_FROM_SOMEWHERE")){
+#   setwd("~/")
+#   rstudioapi::getSourceEditorContext()$path %>%
+#     as.character() %>%
+#     gsub("/R.*","\\1", .) %>%
+#     path.expand() %>%
+#     setwd()
+# }
 
 #shapefile sources==============================================================
 #===============================================================================
-
-#file path DF===================================================================
-mapping_files = read_xlsx('data_source_list.xlsx', 
-                          sheet = "manual") %>%  
-  na_if("NA") %>% 
-  remove_empty(c("cols", "rows")) %>%
-  data.table() %>% 
-  .[,`:=`(folder = paste0("./shapefiles_raw_cache/", raw_name))] %>%  
-  filter(to_application_shp == "Y")
-
-#shapefile_extract=============================================================
-#section filters, uploads, and spatially filters data 
-#resulting data is written to intermediary location 'apllication_shapfiles'
-#before they are made 'map_ready'
-
-map_me = mapping_files
-
-sf_objects_list = list(map_me$folder,
-                       map_me$raw_layer_name,
-                       map_me$raw_name, 
-                       map_me$selection) %>%  
-  pmap(purrr_read_ogr_shapefile) 
-
-sf_objects_list_buffered = sf_objects_list %>%   
-  modify(function(x) x %>%  
-           st_filter(corrdior_buffer) %>% 
-           st_transform(2163) %>%
-           st_simplify(dTolerance = 100) %>%
-           st_transform(4326)
-           )
-
-shapefile_writeout(sf_objects_list_buffered, map_me$processed_name, "application_shapefiles")
-
-#filters sf object list=========================================================
-#makes indexes for sf object listsaaaaaaaaaaaaaaaaaaaaaa
-# index_empty_sf = map(sf_objects_list_pos, function(x) x[] %>%  
-#                        is.null()) %>% 
-#   unlist() %>%  
-#   data.frame(list = .) %>%  
-#   mutate(index = rownames(.)) %>%  
-#   filter(list == F)
-# 
-# index_empty_sf_names = map(sf_objects_list_pos, function(x) x[] %>%  
-#                        is.null() == F) %>% 
-#   unlist() 
-# 
-# sf_objects_list_pos_nonempty = Filter(Negate(is.null), sf_objects_list_pos)
-# layer_names = mapping_files$raw_name[index_empty_sf_names]
-# 
-# sf_objects_list_pos_nonempty %>%  
-#   write
-# 
-# pmap()
-# 
-# 
-# sf_objects_list_pos_nonempty[[21]] %>%  mapView()
 
 #manually cleans and writes shapefiles==========================================
 #this section inports data from shapefiles_rawa_cache
@@ -102,6 +32,7 @@ shapefile_writeout(sf_objects_list_buffered, map_me$processed_name, "application
 #do not try to augment only a single layer
 
 #gets data from 'data source list' 
+{
 processed_shape_files = read_xlsx('data_source_list.xlsx',
                                   sheet = "manual") %>%
   data.table() %>%
@@ -120,18 +51,26 @@ half_polished = list(processed_shape_files$processed_name,
     paste0("application_shapefiles/", x, "/", x, ".shp") %>%
       st_read() %>%
       mutate(`Data Source` = y))
+}
 
+#Manual Processing
+{
 #US Census======================================================================
 tmp_index = which(processed_shape_files$processed_name == "US_Census")
 half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
   quick_col_arrange() 
 
+#CA Census======================================================================
+tmp_index = which(processed_shape_files$processed_name == "CA_Census")
+half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
+  quick_col_arrange() 
+
 #US Railroads======================================================================
 tmp_index = which(processed_shape_files$processed_name == "US_Railroads")
-half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
-  st_transform(4326) %>%
-  st_filter(corrdior_buffer) %>%
-  quick_col_arrange()
+half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>% 
+  filter(is.na(yardname)) %>%  
+  filter(direction > 0) %>% 
+  quick_col_arrange() 
 
 #CA Railroads======================================================================
 tmp_index = which(processed_shape_files$processed_name == "CA_Rail")
@@ -145,16 +84,16 @@ half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
   quick_col_arrange() 
 
 #universities===================================================================
-tmp_index = which(processed_shape_files$processed_name == "Selected Universities (R1)")
+tmp_index = which(processed_shape_files$processed_name == "US_Selected Universities (R1)")
 half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
   filter(TYPE == 1 &
            STATUS == "A") %>%
-  unite(ADDRESS, CITY, STATE, col = "Address", sep = ", ") %>%
+  unite(ADDRESS, col = "Address", sep = ", ") %>%
   mutate(WEBSITE = paste0('<a href = "', WEBSITE, '">', WEBSITE ,'</a>')) %>%
   quick_col_arrange()
 
 #fed house information============================================================
-tmp_file = read_xlsx("./data/US_House_Reps.xlsx", sheet = "altered") %>%
+tmp_file = read_xlsx("US_House_Reps.xlsx", sheet = "altered") %>%
   remove_empty("rows") %>%
   fill(names(.), .direction = "down") %>%
   select(-`Committee Assignment`) %>%
@@ -179,7 +118,7 @@ half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
   select(-Source)
 
 #state house information============================================================
-tmp_file = read_xlsx("./data/US_House_Reps.xlsx", sheet = "wa_house") %>%
+tmp_file = read_xlsx("US_House_Reps.xlsx", sheet = "wa_house") %>%
   separate(col = "Name", into = c("Name", "Party"), sep = "\\(") %>%
   mutate(Party = str_remove_all(Party, "[:punct:]") %>%
            forcats::fct_recode(Democrat = "D", Republican = "R"),
@@ -187,7 +126,7 @@ tmp_file = read_xlsx("./data/US_House_Reps.xlsx", sheet = "wa_house") %>%
          State = "Washington") %>%
   filter(Position == 1)
 
-tmp_file_1 = read_xlsx("./data/US_House_Reps.xlsx", sheet = "or_house") %>%
+tmp_file_1 = read_xlsx("US_House_Reps.xlsx", sheet = "or_house") %>%
   na.omit() %>%
   mutate(list = str_replace(list, "Representative", "Representative:") %>%
            str_remove("http://")) %>%
@@ -221,14 +160,14 @@ half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
   quick_col_arrange()
 
 #state senate information============================================================
-tmp_file = read_xlsx("./data/US_House_Reps.xlsx", sheet = "wa_senate") %>%
+tmp_file = read_xlsx("US_House_Reps.xlsx", sheet = "wa_senate") %>%
   separate(col = "Name", into = c("Name", "Party"), sep = "\\(") %>%
   mutate(Party = str_remove_all(Party, "[:punct:]") %>%
            forcats::fct_recode(Democrat = "D", Republican = "R"),
          District = paste0("State Senate District ", District),
          State = "Washington")
 
-tmp_file_1 = read_xlsx("./data/US_House_Reps.xlsx", sheet = "or_senate") %>%
+tmp_file_1 = read_xlsx("US_House_Reps.xlsx", sheet = "or_senate") %>%
   na.omit() %>%
   mutate(list = str_replace(list, "Senator", "Senator:") %>%
            str_remove("http://")) %>%
@@ -262,14 +201,7 @@ half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
 
 #Clean up intermodal locations tomorrow morning!!!!=====================================
 tmp_index = which(processed_shape_files$processed_name == "Multimodal_Stations")
-half_polished[tmp_index][[1]] = tmp %>%
-  select(c("fac_name", "air_code", "amtrakcode", "ferry_code", "rail_id",
-           "bike_id", "modes_serv", "mode_bus",   "mode_air", "mode_rail",
-           "mode_ferry", "mode_bike", "metro_area")) %>%
-  modify_at(c("air_code", "amtrakcode", "ferry_code",
-              "rail_id", "bike_id"), as.character) %>%
-  unite(air_code, amtrakcode, ferry_code, bike_id, rail_id, col = "code", na.rm = TRUE) %>%
-  mutate(code = na_if(code, "")) %>%
+half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%  
   modify_at(c("mode_bus",   "mode_air", "mode_rail",
               "mode_ferry", "mode_bike"), as.character) %>%
   modify_at(c("mode_bus",   "mode_air", "mode_rail",
@@ -290,14 +222,14 @@ tmp = half_polished[tmp_index][[1]] %>%
           data.frame()) %>%
   st_as_sf()
 
-merged_cities = tmp
+merged_cities = tmp %>% 
   # st_join(tmp, tmp_pop) %>%
   # group_by(City) %>%
   # summarise(`Population Estimate` = sum(estimate)) %>%
   # st_set_geometry(NULL) %>%
   # merge(tmp, .) %>%
   # select(City, `Population Estimate`, Data.Source, geometry) %>%
-  # rename(`Data Source` = "Data.Source")
+  rename(`Data Source` = "Data.Source")
 
 #combining mpos=================================================================
 tmp_file = read_xlsx("MPO_resource_table.xlsx") %>%
@@ -309,14 +241,15 @@ tmp_file = read_xlsx("MPO_resource_table.xlsx") %>%
          Web = paste0('<a href = "', Web, '"> Link to website </a>'),
          Pub_Web = paste0('<a href = "', Pub_Web, '"> ', Publication, ' </a>')) %>%
   filter(Include == "T") %>%
-  select(Key, Acronym, Type, Date, Pub_Web, Web) %>%
+  select(Key, Acronym, Type, Date, Pub_Web, Web) %>% 
   pivot_wider(names_from = "Type",
-              id_cols = c("Key", "Acronym", "Web"),
+              # id_cols = c("Key", "Acronym", "Web"),
               values_from = c("Pub_Web", "Date")) %>%
   rename_all(~ str_remove(., "Pub_Web_"))
 
 tmp_index = which(processed_shape_files$processed_name == "WA_MPO-RTPO")
 tmp_index_1 = which(processed_shape_files$processed_name == "OR_MPO-RTPO")
+tmp_index_2 = which(processed_shape_files$processed_name == "CA_Regional_District")
 
 merged_mpos = half_polished[tmp_index][[1]] %>%
   select(Name, `Data Source`) %>%
@@ -326,21 +259,33 @@ merged_mpos = half_polished[tmp_index][[1]] %>%
          clean_names() %>%
          select(-county) %>%
          setnames(old = "Data Source", "data_source")) %>%
-  shapefile_pair_collapser() %>%
+  shapefile_pair_collapser() %>% 
+  list(., half_polished[tmp_index_2][[1]] %>%
+         select(RGN_NM , `Data Source`) %>%  
+         rename(Name = "RGN_NM") %>%  
+         clean_names() %>% 
+         st_cast("MULTIPOLYGON")) %>% 
+  shapefile_pair_collapser() %>% 
   merge(., tmp_file, by.x = "name", by.y = "Key") %>%
   mutate(name = str_glue('{name} ({Acronym})'),
          Area = st_area(.) %>%
-           units::set_units(mile^2))
+           units::set_units(mile^2)) %>%  
+  rename(`Data Source` = "data_source") %>%
+  select(name, Web, TIP, RTP, CEDS, Date_TIP, Date_RTP, Date_CEDS, Area, `Data Source`, geometry)
 
-merged_mpos = st_join(merged_mpos, tmp_pop) %>%
-    group_by(name) %>%
-    summarise(`Population Estimate` = sum(estimate)) %>%
-    st_set_geometry(NULL) %>%
-    merge(merged_mpos, .) %>%
-  select(name, Web, TIP, RTP, CEDS, Date_TIP, Date_RTP, Date_CEDS, `Population Estimate`, Area, data_source, geometry)
+# merged_mpos = st_join(merged_mpos, tmp_pop) %>%
+#     group_by(name) %>%
+#     summarise(`Population Estimate` = sum(estimate)) %>%
+#     st_set_geometry(NULL) %>%
+#     merge(merged_mpos, .) %>%
+#   select(name, Web, TIP, RTP, CEDS, Date_TIP, Date_RTP, Date_CEDS, `Population Estimate`, Area, data_source, geometry)
+}
+
+
 
 #DATA WRTIE-OUT
 #this writes out to "map_ready" folder
+{
 index_include = which(processed_shape_files$processed_name %in% c("US_Railroads"))
 wirte_out_shapefiles = half_polished
 wirte_out_file_names = processed_shape_files$processed_name
@@ -348,7 +293,7 @@ wirte_out_file_names = processed_shape_files$processed_name
 index_exclude = which(processed_shape_files$processed_name %in% c("WA_MPO-RTPO", "OR_MPO-RTPO", "US Tribal Subdivisions", "OR_Highways",
                                                                   "OR_Cities", "WA_Cities"))
 wirte_out_shapefiles = half_polished[-index_exclude] %>% c(list(merged_mpos, merged_cities))
-wirte_out_file_names = processed_shape_files$processed_name[-index_exclude] %>% c("MPO_RTPOs", "US_Cities")
+wirte_out_file_names = processed_shape_files$processed_name[-index_exclude] %>% c("Regional_Planning", "US_Cities")
 
 shapefile_writeout(wirte_out_shapefiles, wirte_out_file_names, "map_ready")
-
+}

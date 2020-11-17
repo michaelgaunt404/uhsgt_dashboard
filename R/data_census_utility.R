@@ -140,8 +140,6 @@ first_peoples_metrics_sf = first_peoples_metrics %>%
   select(-GEOID) %>%  
   set_names(c("Name", data_first_people$var_name, "geometry"))
 
-data_first_people$variable %>%  unique()
-
 location = "application_shapefiles"
 names = "US_First_Peoples"
 names %>%
@@ -176,10 +174,8 @@ census_data_CT <- get_census(dataset='CA16',
 census_data_CT_final = census_data_CT %>%  
   select(`Region Name`, `Area (sq km)`, contains("v_CA16"))  %>%  
   rename_all(
-    list(
-        str_remove_all(., '.*:') %>%  
-          str_trim()
-    )
+    ~gsub('.*:', "\\1", .x) %>% 
+      str_trim()
   )
 
 location = "application_shapefiles"
@@ -195,8 +191,6 @@ names %>%
       dir.create())
 
 st_write(census_data_CT_final,
-         paste0(location, "/",  names, ".shp"),
-         append=FALSE,
+         paste0(location, "/",  names, "/",  names, ".shp")
 )
 
-getwd()
