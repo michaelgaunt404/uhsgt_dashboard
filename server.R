@@ -1,267 +1,3 @@
-source("global.R")
-source("./R/data_mapper.R")
-source("./R/data_scripts.R")
-
-# Define UI for data upload app ----
-
-ui = dashboardPagePlus(
-  useShinyalert(),
-  #Header==============================================================================================================================================================================
-  #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  header = dashboardHeaderPlus(
-    title = tagList(
-      span(class = "logo-lg", "UHSGT Map Dashboard"), 
-      img(src = "trains.svg")),
-    fixed = TRUE,
-    enable_rightsidebar = F
-  ),
-  
-  #Sidebar==============================================================================================================================================================================
-  #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  sidebar = dashboardSidebar(width  = 200,
-                             sidebarMenu(id = "tabs",
-                                         
-                                         tags$style(HTML(box_styling)),
-                                         # menuItem("Map Dashboard", tabName = "map_dahsboard", icon = icon("map"), 
-                                         #          startExpanded = F),
-                                         menuItem("Map Dashboard", icon = icon("map"),
-                                                  menuSubItem("Base Map", tabName = "map_dahsboard"),
-                                                  menuSubItem("Filtered Map", tabName = "filtered_map")
-                                         ),
-                                         # menuItem("Census Metrics", tabName = "metrics", icon = icon("calculator")),
-                                         menuItem("Regional Planning", tabName = "mpo", icon = icon("calculator")),
-                                         menuItem("Data Center", tabName = "data_center", icon = icon("table")),
-                                         menuItem("Help Center", tabName = "help_center", icon = icon("table"),
-                                                  actionButton(inputId = "into_button", label = "Show Into Msg",
-                                                             icon("info")
-                                                  ),
-                                                  actionButton(inputId = "learn_more", label = "Operation Manual",
-                                                             icon("th"), 
-                                                             onclick = "window.open('https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.pdf', '_blank')"
-                                                  ),
-                                                  actionButton(inputId = "repo", label = "To Project Repo",
-                                                               icon("github"), 
-                                                               onclick = "window.open('https://github.com/michaelgaunt404/uhsgt_dashboard/', '_blank')"
-                                                  )
-                                         )
-                             )
-  ),
-  #Body=================================================================================================================================================================================
-  #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  body = dashboardBody(
-    shinyDashboardThemes(
-      theme = "grey_dark"
-    ),
-    tags$head(tags$script('
-      // Define function to set height of "map" and "map_container"
-      setHeight = function() {
-        var window_height = $(window).height();
-        var header_height = $(".main-header").height();
-
-        var boxHeight = window_height - header_height - 90;
-
-        $("#map_container").height(boxHeight);
-        $("#map").height(boxHeight - 20);
-      };
-
-      // Set input$box_height when the connection is established
-      $(document).on("shiny:connected", function(event) {
-        setHeight();
-      });
-
-      // Refresh the box height on every window resize event    
-      $(window).on("resize", function(){
-        setHeight();
-      });
-    ')),
-    tags$style(type = "text/css", "#full_map {height: calc(100vh - 90px) !important;}"),
-    tags$style(type = "text/css", "#data_overview {height: calc(100vh - 90px) !important;}"),
-    tabItems(
-      #TAB: MAP_DB====================================================================
-      tabItem("map_dahsboard",
-              setShadow(class = "dropdown-menu"),
-              fluidRow(box(height = 20)),
-              fluidRow(
-                column(width = 9,
-                       box(width = "100%",
-                           id = "map_container",
-                           leafletOutput("full_map") %>%  withSpinner(size = 3))
-                ),
-                column(width = 3,
-                       tabBox(width = "100%",
-                              tabPanel("Mapping Options",
-                                       actionButton("map_btn","Base Map Page Info", icon("info")),
-                                       br(),
-                                       # ),
-                                       boxPlus(title = "US Census Filters", width = "100%",
-                                               closable = F, collapsible = T, collapsed = F, 
-                                               status = "primary", solidHeader = T,
-                                               awesomeRadio("census_column_filter", label = "Filter Census Data (by group)",
-                                                            choices =  unique(census_selection_index$name), 
-                                                            selected = "All", inline = T
-                                               ),
-                                               boxPlus(width = "100%", title = "Color Select",
-                                                       closable = F, collapsible = T, collapsed = F, 
-                                                       status = "primary", solidHeader = T,
-                                                       uiOutput("layer_color")), 
-                                               boxPlus(width = "100%", title = "Metric Plots",
-                                                       closable = F, collapsible = T, collapsed = F, 
-                                                       status = "primary", solidHeader = T,
-                                                       plotOutput("map_var_plot", height = 150) %>%  withSpinner(),
-                                                       br(),
-                                                       plotOutput("map_var_plot_sub", height = 150) %>%  withSpinner())
-                                       )
-                              )
-                       )
-                )
-              )
-      ),
-      #TAB: FILTERED_MAP========================================================
-      tabItem("filtered_map", 
-              setShadow(class = "dropdown-menu"),
-              fluidRow(box(height = 20)),
-              fluidRow(
-                column(width = 2, actionButton("map_btn_info","Map Editing Info", icon("question-circle"), block = T),
-                       actionButton("map_btn_filter", "Filter Default Map", icon("filter")),
-                       downloadButton("download_shapefile", "Download User Geometry")
-                ),
-                # column(width = 1, actionButton("save", "Filter Map", icon("filter"))),
-                column(width = 2, sliderInput('rad_input', "Filter Radius (miles)", min = 1, max = 15, value = 2)),
-                # column(width = 2, selectInput("ggplt_slct", label = "Select Plot Filter",
-                #                               choices = unique(census_selection_index$name),
-                #                               selected = unique(census_selection_index$name)[1])),
-                column(width = 2, selectInput("smmry_brplot_slct", label = "Select Percnet Difference Plot Metric",
-                                              choices = c("sd", "mean", "median", "min", "max"),
-                                              selected = "mean"))
-              ),
-              fluidRow(
-                tabBox(
-                  width = "100%", height = 920,
-                  tabPanel("Spatially Filtered Map", 
-                           column(width = 6,
-                                  editModUI("editor", height = 850) %>%  
-                                    withSpinner(size = 3)),
-                           column(width = 6,
-                                  leafletOutput("leaflet_map_edit", height = 850) %>%  withSpinner(size = 3))
-                  ),
-                  tabPanel("Metric Plots",
-                           box(width = "100%",
-                               fluidRow(
-                                 column(width = 12,
-                                        box(width = "100%",
-                                            height = tab_mtrcs_tpbx_hght,
-                                            plotlyOutput("smmry_brplts", height = (tab_mtrcs_tpbx_hght)
-                                            ) %>%  withSpinner()
-                                        )
-                                 )
-                               ),
-                               fluidRow(
-                                 column(width = 2, 
-                                        dataTableOutput("table_select") %>% withSpinner()
-                                 ),
-                                 column(width = 10,
-                                        box(width = "100%",
-                                            height = tab_mtrcs_tpbx_hght,
-                                            plotlyOutput("smmry_bxplts", height = (tab_mtrcs_tpbx_hght)
-                                            ) %>%  withSpinner()
-                                        )
-                                 )
-                               ))
-                           
-                           
-                           # plotlyOutput("smmry_brplts", height = (tab_mtrcs_tpbx_hght-30)) %>%  withSpinner(),
-                           # plotlyOutput("smmry_bxplts", height = (tab_mtrcs_tpbx_hght-30)) %>%  withSpinner()
-                           
-                           # tabBox(
-                           #   width = "100%", 
-                           #   tabPanel("Percent Difference Plot",
-                           #            plotlyOutput("smmry_brplts", height = 750 #(tab_mtrcs_tpbx_hght-30)
-                           #                         ) %>%  withSpinner()),
-                           #   tabPanel("Box Plots",
-                           #            column(width = 3, 
-                           #                   dataTableOutput("table_select") %>% withSpinner()
-                           #            ),
-                           #            column(width = 9,
-                           #                   plotlyOutput("smmry_bxplts", height = 750 #(tab_mtrcs_tpbx_hght-30)
-                           #                                ) %>%  withSpinner())
-                           #   )
-                           #   
-                           # )
-                           
-                  ),
-                  tabPanel("Metric Tabular Data", 
-                           dataTableOutput("census_aggregate_subset") %>%  withSpinner(size = 3)),
-                  tabPanel("Census Tract Subset", 
-                           dataTableOutput("census_subset") %>%  withSpinner(size = 3))
-                )
-              )    
-      ),
-      #TAB: Regional Planning===================================================================
-      tabItem("mpo",
-              setShadow(class = "dropdown-menu"),
-              fluidRow(box(height = 20)),
-              # fluidRow(
-              boxPlus(width = "100%", height = 600, title = "Regional Planning Statistics",
-                      closable = F, collapsible = F, collapsed = F, 
-                      status = "primary", solidHeader = T,
-                      enable_sidebar = T, sidebar_content = mpo_drop_down,
-                      box(width = "95%",
-                          dataTableOutput("mpo_table_with_census") %>%  withSpinner())),
-              # ),
-              fluidRow(
-                column(width = 4,
-                       boxPlus(closable = F, collapsible = F, collapsed = F, 
-                               width = "100%", solidHeader = F, status = "primary",
-                               boxPlus(closable = F, collapsible = T, collapsed = T, 
-                                       width = "100%", solidHeader = T, status = "primary",
-                                       title = "Next 10 Renewed Publications",
-                                       dataTableOutput("mpo_df_alt_soonest_10") %>%  withSpinner()),
-                               boxPlus(collapsed = T, title = "Tracked Documents", 
-                                       closable = FALSE, status = "primary", 
-                                       solidHeader = T, collapsible = TRUE,
-                                       width = "100%",
-                                       plotOutput("mpo_plot_status", width = "100%", height = 300) %>%  
-                                         withSpinner())
-                       )
-                ),
-                column(width = 8,
-                       fluidRow(
-                         wellPanel(height = tab_mtrcs_tpbx_hght+400,
-                                   timevisOutput("mpo_plot_timeline") %>%  withSpinner()
-                         ), 
-                         fluidRow()
-                       )
-                )
-              )
-      ),
-      #TAB: DATA_CENTER=========================================================
-      tabItem("data_center",
-              fluidRow(box(height = 20)),
-              fluidRow(
-                column(width = 5,
-                       box(width = "100%",
-                           id = "map_container",
-                           title = "Default Map Data Layers",
-                           dataTableOutput("data_overview") %>%  withSpinner()
-                       )
-                ), 
-                column(width = 7,
-                       box(width = "100%",
-                           id = "map_container",
-                           title = "Raw Data for Selected Layer",
-                           dataTableOutput("data_select")  %>%  withSpinner())
-                )
-              )      
-      )
-    )
-  )
-)
-
-
-#server====================================================================================================================================================================================================
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 # Define server logic to read selected file ----
 server <- function(input, output) {
   #SECTION: Utility Setup======================================================================
@@ -282,9 +18,9 @@ server <- function(input, output) {
         id = 1,
         main_img = "trains.svg",
         header_img = "flatart_long.jpg",
-        HTML(intro_modal_front),
+        intro_modal_front,
         back_content = tagList(
-          HTML(intro_modal_back)
+          intro_modal_back
         )
       ),
       size = "l",
@@ -298,9 +34,9 @@ server <- function(input, output) {
         id = 1,
         main_img = "trains.svg",
         header_img = "flatart_long.jpg",
-        HTML(intro_modal_front),
+        intro_modal_front,
         back_content = tagList(
-          HTML(intro_modal_back)
+          intro_modal_back
         )
       ),
       size = "l",
@@ -321,8 +57,7 @@ server <- function(input, output) {
   #Mapedit modal
   observeEvent(input$map_btn_info, {
     showModal(modalDialog(
-      wellPanel(
-      map_edit_tab_info),
+      wellPanel(map_edit_tab_info),
       size = "l",
       easyClose = TRUE
     ))
@@ -362,6 +97,7 @@ server <- function(input, output) {
   #SECTION: MAP_EDIT============================================================
   geom = NULL
   
+  #us_census inputs=====
   index_census_select_columns = reactive({
     index_census_select_columns = census_selection_index[name %in% input$census_column_filter, var_name]
   })
@@ -378,71 +114,7 @@ server <- function(input, output) {
     input$census_color
   })
   
-  bbox_reactive <- reactive({
-    input$full_map_bounds
-  })
-  
-  bbox_reactive_d <- bbox_reactive %>% debounce(2000)
-
-  # output$map_var_plot = renderPlot({
-  observe({
-    req(census_color())
-    # isolate(input$full_map_bounds)
-    print("Stop")
-    tmp_click = input$full_map_shape_click
-    tmp_bounds = bbox_reactive_d()
-    
-    centileBreaks <- hist(plot = F, notshared_census %>%
-                            select(census_color()) %>%
-                            .[[1]], breaks = 20)$breaks
-    
-    if (is.null(tmp_click)) {
-      tmp_vert = notshared_census %>% 
-        st_set_geometry(NULL) %>% 
-        select(census_color()) %>% 
-        .[[1]] %>%  
-        mean(na.rm = T)
-    } else {
-      tmp_vert = st_sfc(st_point(c(-122, 48)), crs = 4326) %>%
-        st_filter(notshared_census, .) %>%
-        select(census_color()) %>%
-        .[[1]]
-    }
-    
-    output$map_var_plot_sub = renderPlot({
-      filter_sf(notshared_census, 
-                xmin = tmp_bounds$west, xmax = tmp_bounds$east,
-                ymin = tmp_bounds$south, ymax = tmp_bounds$north) %>% 
-        st_set_geometry(NULL) %>%
-        select(census_color()) %>%
-        set_names("data") %>%
-        ggplot(aes(x = data)) +
-        geom_histogram(color = "black", bins = 20) +
-        geom_vline(xintercept = tmp_vert) +
-        theme +
-        xlim(c(min(centileBreaks), max(centileBreaks))) +
-        labs(y = "Count", title = "Subset (map bounding box)")
-    })
-    
-    output$map_var_plot = renderPlot({
-      notshared_census %>%
-        st_set_geometry(NULL) %>%
-        select(census_color()) %>%
-        set_names("data") %>%
-        ggplot(aes(x = data)) +
-        geom_histogram(color = "black", bins = 20) +
-        geom_vline(xintercept = tmp_vert) +
-        theme +
-        xlim(c(min(centileBreaks), max(centileBreaks))) +
-        labs(y = "Count", title = "Entire Corridor")
-    })
-    
-  })
-  
   census_map_data_zcol = "Total Population (20-64yrs)"
-  
-  census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
-    map_files_dfs[[.]]
   
   #creates new census map based on color input
   census_map = reactive({
@@ -479,11 +151,189 @@ server <- function(input, output) {
               popup = popupTable(., zcol = -c(ncol(.)-1, ncol(.))))  
   })
   
+  #creates front display plots based on click and zoom
+  observe({
+    req(census_color())
+    
+    tmp_click = input$full_map_shape_click
+    tmp_bounds = bbox_reactive_d()
+    
+    centileBreaks <- hist(plot = F, notshared_census %>%
+                            select(census_color()) %>%
+                            .[[1]], breaks = 20)$breaks
+    
+    if (is.null(tmp_click)) {
+      tmp_vert = notshared_census %>% 
+        st_set_geometry(NULL) %>% 
+        select(census_color()) %>% 
+        .[[1]] %>%  
+        mean(na.rm = T)
+    } else {
+      tmp_vert = st_sfc(st_point(c(tmp_click$lng, tmp_click$lat)), crs = 4326) %>%
+        st_filter(notshared_census, .) %>%
+        select(census_color()) %>%
+        .[[1]]
+    }
+    
+    output$map_var_plot_sub = renderPlot({
+      filter_sf(notshared_census, 
+                xmin = tmp_bounds$west, xmax = tmp_bounds$east,
+                ymin = tmp_bounds$south, ymax = tmp_bounds$north) %>% 
+        st_set_geometry(NULL) %>%
+        select(census_color()) %>%
+        set_names("data") %>%
+        ggplot(aes(x = data)) +
+        geom_histogram(color = "black", bins = 20) +
+        geom_vline(xintercept = tmp_vert) +
+        theme +
+        xlim(c(min(centileBreaks), max(centileBreaks))) +
+        labs(y = "Count", title = "Subset (map bounding box)")
+    })
+    
+    output$map_var_plot = renderPlot({
+      notshared_census %>%
+        st_set_geometry(NULL) %>%
+        select(census_color()) %>%
+        set_names("data") %>%
+        ggplot(aes(x = data)) +
+        geom_histogram(color = "black", bins = 20) +
+        geom_vline(xintercept = tmp_vert) +
+        theme +
+        xlim(c(min(centileBreaks), max(centileBreaks))) +
+        labs(y = "Count", title = "Entire Corridor")
+    })
+    
+  })
+  
+  #us_census inputs=====
+  ca_index_census_select_columns = reactive({
+    ca_index_census_select_columns = ca_census_selection_index[name %in% input$ca_census_column_filter, var_name]
+  })
+  
+  output$layer_color_ca <- renderUI({
+    awesomeRadio("census_color_ca", 
+                 "Census Layer Color Metric", 
+                 selected = ca_index_census_select_columns()[1],
+                 choices = ca_index_census_select_columns(), inline = T
+    )
+  })
+  
+  census_color_ca = reactive({
+    input$census_color_ca
+  })
+  
+  census_map_data_zcol = "Population (2016)"
+  
+  #creates new census map based on color input
+  census_map_ca = reactive({
+    if(is.null(census_color_ca())) {
+      tmp_color = ca_index_census_select_columns()[1]  
+    } else {
+      if (census_color_ca() %in% ca_index_census_select_columns()){
+        tmp_color = census_color_ca()
+      } else {
+        tmp_color = ca_index_census_select_columns()[1] 
+      }
+    }
+    
+    #this perfroms very hard indexing operation 
+    #issues arose with str_matching for the column indexes
+    tmp_index = c("Name", "Area",  ca_index_census_select_columns())
+    tmp_map_ready = which(map_ready$processed_name %in% "CA_Census")
+    tmp_map_file = map_files_dfs[[tmp_map_ready]] 
+    tmp_index = which(c("Name", "Area", ca_census_selection_index[name == "All", var_name]) %in% tmp_index)
+    tmp_zcol = which(c("Name", "Area", ca_census_selection_index[name == "All", var_name]) %in% tmp_color) %>%  
+      colnames(tmp_map_file)[.]
+    census_map_data_zcol_ca <<- tmp_zcol
+    census_map_data_ca <<- tmp_map_file %>%
+      .[,tmp_index]
+    
+    tmp_map_file %>%
+      .[,tmp_index] %>%  
+      mapview(layer.name = paste0("CA_Census - ", tmp_color) %>%
+                str_replace_all("_", " "),
+              zcol = tmp_zcol,
+              legend = T,
+              homebutton = F,
+              alpha = .4,
+              popup = popupTable(., zcol = -c(ncol(.)-1, ncol(.))))  
+  })
+  
+  
+  bbox_reactive <- reactive({
+    input$full_map_bounds
+  })
+  
+  bbox_reactive_d <- bbox_reactive %>% debounce(2000)
+  
+  #creates front display plots based on click and zoom
+  observe({
+    req(census_color_ca())
+    tmp_click = input$full_map_shape_click
+    tmp_bounds = bbox_reactive_d()
+    
+    centileBreaks <- hist(plot = F, notshared_census_ca %>%
+                            select(census_color_ca()) %>%
+                            .[[1]], breaks = 20)$breaks
+    
+    if (is.null(tmp_click)) {
+      tmp_vert = notshared_census_ca %>% 
+        st_set_geometry(NULL) %>% 
+        select(census_color_ca()) %>% 
+        .[[1]] %>%  
+        mean(na.rm = T)
+    } else {
+      tmp_vert = st_sfc(st_point(c(tmp_click$lng, tmp_click$lat)), crs = 4326) %>%
+        st_filter(notshared_census_ca, .) %>%
+        select(census_color_ca()) %>%
+        .[[1]]
+    }
+    
+    output$map_var_plot_sub_ca = renderPlot({
+      filter_sf(notshared_census_ca, 
+                xmin = tmp_bounds$west, xmax = tmp_bounds$east,
+                ymin = tmp_bounds$south, ymax = tmp_bounds$north) %>% 
+        st_set_geometry(NULL) %>%
+        select(census_color_ca()) %>%
+        set_names("data") %>%
+        ggplot(aes(x = data)) +
+        geom_histogram(color = "black", bins = 20) +
+        geom_vline(xintercept = tmp_vert) +
+        theme +
+        xlim(c(min(centileBreaks), max(centileBreaks))) +
+        labs(y = "Count", title = "Subset (map bounding box)")
+    })
+    
+    output$map_var_plot_ca = renderPlot({
+      notshared_census_ca %>%
+        st_set_geometry(NULL) %>%
+        select(census_color_ca()) %>%
+        set_names("data") %>%
+        ggplot(aes(x = data)) +
+        geom_histogram(color = "black", bins = 20) +
+        geom_vline(xintercept = tmp_vert) +
+        theme +
+        xlim(c(min(centileBreaks), max(centileBreaks))) +
+        labs(y = "Count", title = "Entire Corridor")
+    })
+    
+  })
+  
+  #map_object creation====
+  census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
+    map_files_dfs[[.]]
+  
+  ca_census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
+    map_files_dfs[[.]]
+  
   #makes the reactive map
   reactive_mappp = reactive({
     map_files_used = map_ready
     tmp = which(map_ready$processed_name %in% "US_Census")
     map_files[[tmp]] = census_map()
+    
+    tmp = which(map_ready$processed_name %in% "CA_Census")
+    map_files[[tmp]] = census_map_ca()
     
     map_to_be_shown = map_files %>%
       reduce(`+`)
@@ -527,6 +377,7 @@ server <- function(input, output) {
           tmp_buffer = geom %>%
             buffer_cleaner((input$rad_input)*1609.34)
           
+          #us_census_subset_calculations=========
           data_for_plot = notshared_census %>%  
             st_filter(., tmp_buffer) %>% 
             data.frame() %>% 
@@ -542,7 +393,7 @@ server <- function(input, output) {
             data.table() %>% 
             .[,`:=`(variable_raw = variable %>% 
                       str_remove_all("[^a-zA-Z0-9]"))]
-        
+          
           output$census_aggregate_subset = renderDataTable({
             data_tables = data_for_plot %>%
               data.table() %>% 
@@ -558,7 +409,7 @@ server <- function(input, output) {
                                 data_tables %>%  
                                   filter(type != "Subset"), 
                                 by = "variable", 
-                                suffixes = c(".cor", ".sub")
+                                suffixes = c(".sub", ".cor")
             )  %>%  
               arrange(variable) %>%  
               select(!contains("type")) %>% 
@@ -566,7 +417,7 @@ server <- function(input, output) {
                         fillContainer = T,
                         extensions = c('Buttons'),
                         options = list(
-                          scrollY = 750, scrollX = T,
+                          scrollY = 700, scrollX = T,
                           pageLength = 900, dom = 'Brt',
                           initComplete = JS(
                             "function(settings, json) {",
@@ -587,9 +438,9 @@ server <- function(input, output) {
                         fillContainer = T,
                         extensions = c('Buttons', "FixedColumns"),
                         options = list(
-                          scrollY = 750, scrollX = 800,
+                          scrollY = 650, scrollX = 800,
                           pageLength = 900, dom = 'Brt',
-                          fixedColumns = list(leftColumns = 2),
+                          fixedColumns = T,
                           initComplete = JS(
                             "function(settings, json) {",
                             "$('body').css({'font-family': 'Calibri'});",
@@ -712,6 +563,155 @@ server <- function(input, output) {
               base_map_options() 
           })
           
+          #ca_census_subset_calculations=========
+          data_for_plot_ca = notshared_census_ca %>%
+            st_filter(., tmp_buffer) %>%
+            data.frame() %>%
+            set_names(c(colnames(notshared_census_ca))) %>%
+            select(!all_of(index_clmn_rmv[-length(index_clmn_rmv)])) %>%
+            data.table()  %>%
+            melt(.,
+                 id.vars = c("Name"),
+                 measure.vars = index_numeric_columns_gg_ca) %>%
+            mutate(type = "Subset") %>%
+            bind_rows(notshared_gg_tmp_ca,
+                      .) %>%
+            data.table() %>%
+            .[,`:=`(variable_raw = variable %>%
+                      str_remove_all("[^a-zA-Z0-9]"))]
+
+          output$census_aggregate_subset_ca = renderDataTable({
+            data_tables = data_for_plot_ca %>%
+              data.table() %>%
+              .[,.(mean = mean(value, na.rm = T) %>%  round(2),
+                   median = median(value, na.rm = T)%>%  round(2),
+                   min = min(value, na.rm = T)%>%  round(2),
+                   max = max(value, na.rm = T)%>%  round(2),
+                   sd = sd(value, na.rm = T)%>%  round(2)), by = .(variable, type)] %>%
+              .[,`:=`(variable = fct_inorder(variable))]
+
+            merge(data_tables %>%
+                    filter(type == "Subset"),
+                  data_tables %>%
+                    filter(type != "Subset"),
+                  by = "variable",
+                  suffixes = c(".sub", ".cor")
+            )  %>%
+              arrange(variable) %>%
+              select(!contains("type")) %>%
+              datatable(escape = F,
+                        fillContainer = T,
+                        extensions = c('Buttons'),
+                        options = list(
+                          scrollY = 700, scrollX = T,
+                          pageLength = 900, dom = 'Brt',
+                          initComplete = JS(
+                            "function(settings, json) {",
+                            "$('body').css({'font-family': 'Calibri'});",
+                            "}"),
+                          buttons = list("csv", "excel", "copy", "pdf")
+                        ))
+          })
+
+          output$census_subset_ca = renderDataTable({
+            notshared_census_ca %>%
+              st_filter(., tmp_buffer) %>%
+              data.frame() %>%
+              set_names(c(colnames(notshared_census_ca))) %>%
+              select(!all_of(index_clmn_rmv[-length(index_clmn_rmv)])) %>%
+              data.table()  %>%
+              datatable(escape = F,
+                        fillContainer = T,
+                        extensions = c('Buttons', "FixedColumns"),
+                        options = list(
+                          scrollY = 650, scrollX = 800,
+                          pageLength = 900, dom = 'Brt',
+                          fixedColumns = T,
+                          initComplete = JS(
+                            "function(settings, json) {",
+                            "$('body').css({'font-family': 'Calibri'});",
+                            "}"),
+                          buttons = list("csv", "excel", "copy", "pdf")
+                        ))
+          })
+
+          output$smmry_brplts_ca <- renderPlotly({
+            smmry_brplts = data_for_plot_ca %>% 
+              merge.data.table(.,
+                               ca_census_selection_index[name != "All", .(name, var_name)] %>%
+                                 mutate(var_name = var_name %>%  str_to_title(),
+                                        variable_raw = var_name %>%
+                                          str_remove_all("[^a-zA-Z0-9]")),
+                               by.x = "variable", 
+                               by.y = "var_name") %>%
+              rename(var_type = name) %>%
+              select(variable, type, var_type, value) %>%
+              data.table() %>%
+              .[,.(mean = mean(value, na.rm = T),
+                   median = median(value, na.rm = T),
+                   min = min(value, na.rm = T)%>%  round(2),
+                   max = max(value, na.rm = T)%>%  round(2),
+                   sd = sd(value, na.rm = T)), by = .(variable, type, var_type)] %>%
+              pivot_longer(cols = !c(variable, type, var_type)) %>%
+              pivot_wider(names_from = type, values_from = value) %>%
+              mutate(Error = 100*(Subset-Corridor)/Corridor,
+                     variable = fct_relevel(variable,
+                                            ca_census_selection_index[name != "All", var_name]),
+                     text = str_glue("{variable}
+                                     \n Corridor: {round(Corridor,2)}
+                                     \n Subset: {round(Subset, 2)}
+                                     \n Deviation: {round(Error, 2)}%")) %>%
+              arrange(variable) %>%
+              mutate(names_smll = variable %>%
+                       gsub("\\(.*","\\1", .) %>%
+                       str_trim() %>%
+                       str_replace_all("000 ", "K ") %>%
+                       ifelse(str_count(.)>18,
+                              abbreviate(., minlength = 10) %>%
+                                as.character(),
+                              .) %>%
+                       fct_inorder()) %>%
+              filter(name == input$smmry_brplot_slct) %>%
+              ggplot() +
+              geom_col(aes(x = names_smll, y = Error, fill = Error>0, text = text) ) +
+              facet_grid(.~var_type, scales = "free_x", space='free_x') +
+              labs(y = "Percent Difference", x = "") +
+              theme +
+              theme(legend.position='none',
+                    axis.text.x = element_text(angle = 45, hjust = 1))
+
+            ggplotly(smmry_brplts, tooltip = c("text")) %>%
+              hide_legend()
+          })
+
+          output$smmry_bxplts_ca = renderPlotly({
+            req(input$table_select_ca_rows_selected)
+
+            index_plt_clmns = ca_census_selection_index[, var_name] %>%
+              unique() %>% 
+              str_to_title() %>% 
+              .[input$table_select_ca_rows_selected]
+
+            smmry_bxplts = data_for_plot_ca %>%
+              # .[variable_raw %in% index_plt_clmns,] %>%
+              .[variable %in% index_plt_clmns,] %>%
+              ggplot() +
+              geom_boxplot(aes(x = as.factor(type),
+                               y = value,
+                               fill = as.factor(variable)),
+                           width = 1, color = "black") +
+              facet_wrap(~variable, #nrow = 2,
+                         scales = "free_y") +
+              # scale_x_discrete(expand=c(0.8,0)) +
+              labs(y = "", x = "") +
+              theme +
+              theme(legend.position='none')
+
+            ggplotly(smmry_bxplts, tooltip = c("text")) %>%
+              hide_legend()
+          })
+
+          #user_shapfile_zip _and_write=========
           geom = geom %>%  
             mutate(feature_type = feature_type %>%  
                      str_replace("rectangle", "polygon") %>% 
@@ -770,7 +770,7 @@ server <- function(input, output) {
         selection = "none",
         extensions = c('Buttons', "FixedColumns"), 
         options = list(
-          scrollY = 370, pageLength = 900, fixedColumns = list(leftColumns = 2),
+          scrollY = 370, pageLength = 900, fixedColumns = TRUE,
           dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
           initComplete = JS(
             "function(settings, json) {",
@@ -853,6 +853,7 @@ server <- function(input, output) {
     })
   })
   
+  #SECTION: MISC OBJECTS========================================================
   output$data_overview = renderDataTable({
     map_ready %>%
       select(processed_name, group, notes, src_url) %>%
@@ -873,13 +874,12 @@ server <- function(input, output) {
       )
 
   })
-  
+
   output$data_select = renderDataTable({
     req(input$data_overview_rows_selected)
-    
-    map_files_dfs[input$data_overview_rows_selected] %>%  
+    map_files_dfs[[input$data_overview_rows_selected]] %>%  
       data.table() %>% 
-      .[, -c("Plain", "Geometry")] %>% 
+      .[, -c("Plain", "Geometry")] %>%
       datatable(
         escape = F,
         selection = "single",
@@ -898,13 +898,32 @@ server <- function(input, output) {
   output$table_select = renderDataTable({
     census_selection_index[, var_name] %>%  
       unique() %>%  
-      data.table(`Box Plot Select` = .) %>%  
+      data.table(`Box Plot Metric Select` = .) %>%  
       datatable(
         escape = F,
         fillContainer = T,
         options = list(
           searching = "FALSE",
-          scrollY = 400, pageLength = 900,
+          scrollY = 350, pageLength = 900,
+          dom = 't', 
+          initComplete = JS(
+            "function(settings, json) {",
+            "$('body').css({'font-family': 'Calibri'});",
+            "}")
+        )
+      )
+  })
+  
+  output$table_select_ca = renderDataTable({
+    ca_census_selection_index[, var_name] %>%  
+      unique() %>%  
+      data.table(`Box Plot Metric Select` = .) %>%  
+      datatable(
+        escape = F,
+        fillContainer = T,
+        options = list(
+          searching = "FALSE",
+          scrollY = 350, pageLength = 900,
           dom = 't', 
           initComplete = JS(
             "function(settings, json) {",
@@ -918,5 +937,3 @@ server <- function(input, output) {
 
 
 
-# Run the app ----
-shinyApp(ui, server)

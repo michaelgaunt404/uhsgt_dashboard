@@ -1,0 +1,109 @@
+---
+title: "![](./www/flatart_long.jpg){width=9in}"
+author: "Michael Gaunt mike.gaunt@wsp.com"
+date: '2020-11-11'
+output:
+  word_document:
+    toc: yes
+    toc_depth: '2'
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: yes
+      smooth_scroll: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document serves as a guide to the back-end portion of the UHSGT dashboard. This guide is not intended to teach how to use R but to describe the main components, files, directories, update methods, and deployment startegies regarding the application
+Overview 
+The UHSGT dashboard was made using the R language and Shiny dashboard framework. Both R and Shiny require specific domain knowledge to implement; however, this applications was developed to limit the amount of information
+Files and Directories 
+Please see the below image that details the dashboards files.
+XXXXXXXXXXXXXXX
+•	global.R 
+o	Initializes the R environment
+o	Loads the required packages
+o	Loads custom functions need for the project
+o	You will need to load all the packages in this file if you do any coding or if you run locally 
+•	App.r 
+o	This is the R script that contains the UI and server logic for the application 
+o	It calls tree files – global.R to set up the environment, data_mapper.R and data_scripts.R
+•	Top Level Excel Spreadsheets
+o	data_source_list.xlsx
+	This spreadsheet defines all data processing operations and map development operation 
+o	MPO_resource_table.xlsx
+	Contains all the information for US MPOs and Vanvouver Metro 
+	This tabular data is merged spatial boundaries for the regional planning jurisidicitons
+o	ca_parknride_raw
+	Contaains data depiciting the park and ride locations in Vancouver Metro area 
+	This data was gathered by hand
+o	US_House_Reps.xlsx
+	Contains tabular data for US state house and senate repersentatives
+	This tabular data is merged with spatial boundaries for us house and senate districts
+	This data was gathered by hand
+•	The excel spreadsheets in the top level of this folder contain data that is used to develop and process the data  
+•	R folder 
+o	Contains all R scripts
+o	Each R script contains a description of what it does in the code itself
+o	data_census_utility.R
+	Perfroms all operations related to acquiring and processing US and CA census data from their repsecttive APIs
+	This script uses data_source_list.xlsx to define the queuries 
+	The US data query information comes from the “tidycensus” tab 
+	The CA data query nformation comes from the “ca_census” tab
+o	Data_mapper.R 
+	Called by the app.R script
+	It preps the shapefile data in map_ready for the shiny app 
+	It makes plots used for the shiny application 
+o	Data_scripts.R
+	Contains text that is called by the shiny file 
+	Everything in here is static text
+	Contains items like modal text or text for in app help buttons
+o	data_process_raw.R
+	Uses the information contained in data_source_list.xlsx to process shapefiles located in shapefiles_raw_cache
+	Primaruly bufferes the raw shapefiles and removes unrequired data attributes
+	After processing, the shapfiels are written to the application_shapefiles folder 
+	This is not called by the shiny file and is ran manually
+	Note: running this file is only required if you want to reprocess files that were included in the intial release, you don not need to this script to process files hta have already been processed outside of R – already processed files can be dropped into the map_ready folder to avoid processing 
+o	data_ data_process_map_ready.R 
+	This script further processes the shapfiles that are located in the application_shapefiles folder
+	This script performs any and all bespoke processing required by each data
+•	Example: Adding aatributes based of existing attibutes, modify exisiting attributes, merging data to exisiting shapffiles, mergin shapfiels to create new data layers, etc . 
+	This script perfroms the final processing, once processed the shapefiels are ready to be included in the map and written to the map_ready folder
+	This is not called by the shiny file and is ran manually
+	Note: running this file is only required if you want to reprocess files that were included in the intial release, you don not need to this script to process files hta have already been processed outside of R – already processed files can be dropped into the map_ready folder to avoid processing
+o	scratch.R 
+	This script was used for development 
+	It is not used in the shiny script
+•	shapefiles_raw_cache folder
+o	Contains all the raw shapefiles that are used and were potentially going to be used for the dashboard 
+o	data_process_raw.R uses the information contained in data_source_list.xlsx to pull data from this location and perform the intial processing
+o	The excel spreadsheet data_source_list.xlsx defines which shapefiles are taken from this folder and processed
+•	application_shapefiles folder 
+o	Contains all the shapefiles that have been initially processes
+o	These  files have been buffered and filtered 
+o	The files located in this folder are further filtered by data_process_map_ready.R
+•	map_ready folder 
+o	This folder contains all the shapfeles that have gone through final processing and that will be used in the dashboard 
+o	Any shapefiles that have been processed outside of R and that are to be included in the shiny application should be placed here
+•	mapedit_tmp folder
+o	Contains dummy shapefiles that are rewritten when the user generates new features and would like to download them 
+o	When they are downloaded the shiny app writes those features here and zips this folder for the user
+•	corridor_buffer folder 
+o	Contains a singular shapefile that is used to buffer the raw shapefiles that are contained in shapefiles_raw_cache when they are initially processed in data_process_raw.R
+o	This buffer was created manually and roughly fallows the I5 from Eugene to Vancouver, BC.
+o	A 15 mile buffer is currently being used 
+•	www folder 
+o	This is a standard folder that is used to hold images, css, or javascript files that will be used by the shiny application
+•	Rsconnect folder 
+o	This contains information regarding the deployment of the app on shinyapps.io 
+o	It is currentlt linked to XXXXXXXXXXXXXXXXXXX
+o	You will need to update this folder if it is deployed else where

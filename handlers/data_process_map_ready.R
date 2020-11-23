@@ -15,12 +15,12 @@
 library(magrittr)
 
 # if (!exists("BEING_SOURCED_FROM_SOMEWHERE")){
-#   setwd("~/")
-#   rstudioapi::getSourceEditorContext()$path %>%
-#     as.character() %>%
-#     gsub("/R.*","\\1", .) %>%
-#     path.expand() %>%
-#     setwd()
+  # setwd("~/")
+  # rstudioapi::getSourceEditorContext()$path %>%
+  #   as.character() %>%
+  #   gsub("/R.*","\\1", .) %>%
+  #   path.expand() %>%
+  #   setwd()
 # }
 
 #shapefile sources==============================================================
@@ -56,12 +56,14 @@ half_polished = list(processed_shape_files$processed_name,
 #Manual Processing
 {
 #US Census======================================================================
-tmp_index = which(processed_shape_files$processed_name == "US_Census")
+tmp_col_list = c('T.P1.', "Wrkdt", "WrkdC", "Nfxdw", "Wrkdp", "Pblct", "T.M1.", "Ctv.d", "Ctv.p",  "Walkd", "Bcycl", "Othrm")
+tmp_index = which(processed_shape_files$processed_name == "CA_Census")
 half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
+  select(-tmp_col_list, tmp_col_list) %>% 
   quick_col_arrange() 
 
 #CA Census======================================================================
-tmp_index = which(processed_shape_files$processed_name == "CA_Census")
+tmp_index = which(processed_shape_files$processed_name == "US_Census")
 half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
   quick_col_arrange() 
 

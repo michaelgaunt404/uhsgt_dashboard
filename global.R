@@ -9,10 +9,13 @@
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# source("global.R")
+# source("./R/data_mapper.R")
+# source("./R/data_scripts.R")
+
 #package install and load~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(rgdal) #for inport/outport
-# library(maptools) #provides mapping functions
 library(sf)
 library(mapview)
 library(leaflet)
@@ -22,24 +25,18 @@ library(units)
 library(data.table)
 library(tidyverse)
 library(lubridate)
-library(tidycensus)
-library(tidyr)
 library(magrittr)
-library(furrr)
 library(skimr)
 
 library(readxl)
-library(stringr)
 library(janitor)
 library(forcats)
 
 library(plotly)
-library(ggplot2)
 library(viridis)
 library(DT)
 library(ggdark)
 
-library(shinyalert)
 library(shiny)
 library(shinycssloaders)
 library(shinyWidgets)
@@ -48,12 +45,11 @@ library(shinydashboardPlus)
 library(rintrojs)
 library(htmlwidgets)
 library(dashboardthemes)
-
+library(shinyalert)
 library(timevis)
-#maynotwantthese 
 library(mapedit)
 
-
+library(lwgeom)
 
 #global environement variables~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -188,14 +184,6 @@ theme = dark_theme_gray() +
         panel.background = element_rect(fill = color, colour = color), 
         axis.line = element_line(color = "black"))
 
-
-# box_styling = ".box.box-solid.box-primary>.box-header {
-# color:#fff;background:#0d1214}
-# .box.box-solid.box-primary{
-# border-bottom-color:#0d1214; border-left-color:#0d1214; 
-# border-right-color:#0d1214;border-top-color:#0d1214;
-# background:#0d1214}"
-
 box_styling = ".box.box-solid.box-primary>.box-header {
 color:#fff;background:#1e282d}
 .box.box-solid.box-primary{
@@ -220,7 +208,6 @@ base_map_options = function(map){
       tiles = providers$CartoDB.PositronEsri.WorldStreetMap,
       toggleDisplay = TRUE)
 }
-
 
 tab_mtrcs_tpbx_hght = 400
 tab_mtrcs_plttab_hght = 400

@@ -24,9 +24,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Overview
-The Ultra High Speed Ground Transportation (UHSGT) Planning Dashboard is a tool to investigate the Eugene, OR to Vancouver, British Columbia corridor as it pertains to the planning and development if UGSGT in the Pacific Northwest (PNW). No data or geographic information system (GIS) skills are required to use this dashboard. This dashboard brings together a multitude of shape files representing a variety of government jurisdictions and existing transportation infrastructure which populate the corridor - allowing the user to inspect spatial connections between different features and retrieve statistics immediately. This tool also provides the ability for users to define their own geometries and investigate how those new features interact with existing layers and boundaries. 
+The Ultra High Speed Ground Transportation (UHSGT) Planning Dashboard is a tool to investigate the Eugene, OR to Vancouver, British Columbia corridor for the purposes of planning a potential UGSGT system in the Pacific Northwest (PNW). This dashboard is a web-based application - it requires no specific technical domain knowledge to use and gather information from. This dashboard brings together a variety of data streams which work together to represent the governance and transportation  networks which make up the corridor. Combining all of this data in one place allows the user to inspect spatial connections between different features and retrieve statistics with ease and immediacy. In addition, this tool provides the ability for users to define their own spatial geometries and investigate how those new features interact with existing map layers, boundaries, and features. 
 
-The dashboard was built using R and Shiny. GeocodR was created as part of the ASIL Initiatives by Michael Gaunt (Data Scientist, Seattle) with review by Nicholas Richter (Lead System Analyst, Seattle). 
+## Dashboard Features
+The main features included in this map are as follows: 
+
+* A large interactive map of the corridor from Eugene, OR. to Vancouver, British Columbia
+  + This map contains a number of different layers and displays easily accessible information on layer features
+  + This map encourages the user to explore the corridor at a high level
+* The ability for users to provide/create their own geometry and see how it interacts with the default map 
+  + This feature increases the user's ability to target areas and map layers
+  + Users can provide
 
 
 # User Manual
@@ -51,11 +59,12 @@ Left Sidebar
   + Map Dashboard is the default page and contains two sub-pages 
     + The Base Map page displays the base map and map input controls on the right sidebar
     + The Filtered Map page contains all of the features that allow for user-defined geometry, map sub-setting, and metric aggregation
-  + MPO RTPO page contains information pertaining to US MPOs
-    + In particular, this page details when specific planning documents will be redrafted and published by the MPOs 
-    + These documents are the Comprehensive Economic Development Strategy (CEDS), Regional Transportation Plan (RTP), and the Transportation Improvement Program (TIP)
+  + The Regional Planning page contains information pertaining to US MPOs and Canadian Regional Districts (RTDs)
+    + In particular, this page details when specific planning documents will be redrafted and published by the MPOs/RTDs 
+    + The US documents tracked by this dashboard are the Comprehensive Economic Development Strategy (CEDS), Regional Transportation Plan (RTP), and the Transportation Improvement Program (TIP)
+    + The Canadian documents traced by this dashboard are equivalent to that of those specified above
   + The Data Center page contains tables detailing the layers used for the base map
-  + The Help Center does not link to a new page but help and information buttons
+  + The Help Center widget does not link to a new page but displayed additional help and information buttons when clicked
   
 Main Display
 
@@ -68,12 +77,34 @@ This section describes in more detail the different pages of the dashboard and t
 ### Base Map 
 This page displays the base corridor map and it's census inputs. 
 
-The default map displays a multitude of layers depicting jurisdictional boundaries and important transportation features located along corridor. The extent of the base map reaches from Eugene, Oregon to Vancouver, British Columbia and from the Pacific Ocean to the Cascades. Many of the map layers extents were much larger but were buffered this way to limit computational load and to narrow the region for planning efforts. As implied earlier, the map contains layers for British Columbia, Washington, and Oregon - not all states or regions have the same type of data or types of layers available to them. This was a result of data being available for certain regions and not others as well as differences in data between the US and CA.
+The default map displays a multitude of layers depicting jurisdictional boundaries and important transportation features located along corridor. The extent of the base map reaches from Eugene, Oregon to Vancouver, British Columbia and from the Pacific Ocean to the Cascades. Many of the map layers extents were much larger than what is shown in the dashboard but were buffered/reduced to limit computational load and to narrow the region for planning efforts. As implied earlier, the map contains layers for British Columbia, Washington, and Oregon - not all states or regions have the same type of data or types of layers available to them. This was a result of data being available for certain regions and not others as well as differences in data between the US and CA.
 
-The map is interactive and can be manipulated using your cursor - the user can perform zoom and pan operations by clicking on the map and rolling their mouse wheel or drag the map,m respectively. Layers can be hidden or displayed by clicking on layers contained in the map layer icon in the upper left-hand corner of the map. The default displayed layers are US MPO RTPOs and US Census tracts - the US Census layer's name will change depending on what US Census metric is being used to color scale census tracts - default metric for the US Census is Total Population. The metric used to color US Census tract polygons can be changed by interacting with the Census Filters sidebar drop-down to the right of the main display. Filter Census Data (by group) changes/limits the available Census Layer Color Metric options and Census Layer Color Metric is the input that will change the UC Census layer color scale.
+#### Map Info
+
+* The map is interactive
+  + It can be manipulated using your cursor
+  + Perform zoom and pan operations by clicking on the map and rolling the mouse wheel or drag the map, respectively 
+* Layers can be hidden or displayed by clicking on layers contained in the map layer icon
+  + See the upper left-hand corner of the map
+  + The default displayed layers are Regional Planning and US/CA Census tracts
+  * The US and CA Census layer's name will change depending on what Census metric is being used to color scale census tracts
+  * he default metric for the US/CA Census layers are Total Population and Population(2016), repetitively
+    * The metric used to color US Census tract polygons can be changed by interacting with the Census Filters 
+      * See the sidebar drop-down to the right of the main display
+* The number of metrics per US an CA can be reduced
+  * Filter Census Data (by group) changes/limits the available Census Layer Color Metric options and which metrics are displayed on the map
+* The right sidebar contains inputs the user can use to augment the map 
+  * The user can limit the number of Census metrics shown in the map pop-up window by 
+  * The user can change the census layer coloring by changing 
+* The right sidebar displays two plots for the US and Canadian drop downs
+  * These plots display histograms for the selected variable used to color each census layer by
+  * The top plot displays the histogram for the entire corridor for the specified hairball
+  * The bottom plot displays the histogram for a subset of the corridor for the specified variable 
+    * This subset is determined by the map bounding box created by the map viewer pane
+    * Example: if the user zooms into the map, they will make this bounding box smaller this displaying a smaller number of census tracts, the subset map will redraw the histogram only using the census tracts seen in the viewer pane/bounding box
 
 ### Filtered Map 
-This page enables the user to define new geometries to use to spatially filter the default corridor map. The subset returns all layers and features that it overlaps with and removes all layers that it has no interaction with. Metrics for the remaining census tracts are aggregated and returned to the user both visually in a series of plots and in tabular form. The subset aggregates can be compared to the corridor level aggregates to investigate how user defined spatial subset deviates from the corridor as a whole. For example, a user might be interested in equity and a specific demographic's representation for a potential Right-of-Way (ROW). The user draws a line on the map representing the proposed ROW, all relevant layer and map features are returned to the user once they initiate the subset process. They can then investigate their question regarding equity with respect to the proposed ROW. The user-defined features and resulting aggregated data can be downloaded - these processes are described below. 
+This page enables the user to define new geometries to use to spatially filter the default corridor map. The subset returns all layers and features that it overlaps with and removes all layers that it has no interaction with. Metrics for the remaining census tracts are aggregated and returned to the user both visually in a series of plots and in tabular form. The subset aggregates can be compared to the corridor level aggregates to investigate how user defined spatial subset deviates from the corridor as a whole. For example, a user might be interested in equity and a specific demographic's representation for a potential Right-of-Way (ROW). The user draws a line on the map representing the proposed ROW, all relevant layer and map features are returned to the user once they initiate the subset process. They can then investigate their question regarding equity with respect to the proposed ROW. The user-defined features and resulting aggregated data can be downloaded - these processes are described below. The data created via the subset are available for both US and CA layers.
 
 This page is composed of two containers - the top input container and the lower tab box. The top input container houses buttons and inputs that the user can use to define and initiate the map sub-setting and metric aggregation process. The tab box contains a number of tabs that house the sub-setting features and the resulting maps, plots, and tables. 
 
@@ -101,6 +132,7 @@ This page is composed of two containers - the top input container and the lower 
       + The user can take pictures of the plots and save them using the camera feature
   + The bottom plot displays the same data but in box-plot form
     + The box plots indicate the central tendency and spread of the US Census metrics over the corridor and subsetted census tracts
+    + The user defines which variables to include in the plot by clicking on variables in the table left-adjacent
     + Like above, this plot is also fully interactive
 * Metric Tabular Data
   + This tab displays the same information as the above plots do but in tabular form
@@ -119,21 +151,35 @@ This page is composed of two containers - the top input container and the lower 
 * The user has the option to download their geometry by pressing the <strong>Download User Geometry</strong> button (see Navbar above)
 
 
-### MPO/RTPO Map 
-This page contains infromation about the regional agencies responsible for tranpostrtion planning along the corridor. In the US, regional transportaion planning is pefromed by metropolitan planning organizations (MPO) or regional transportion planning orgainizations (RTPO) - these organizations are federally mandated and federally funded and are inplace to esnsure regional cooperation with regards to transportion planning. This layer of governance directs and allocates investements for tranprotaion projects, establish shared vision and goals for the future of the redion, and act as a conduit that faccilliate collaboration betweeen residents, interested parties, and other levels of govenerment both at the federal, state, and local levels. In acting in the capacity stated above, regional transporation planners produce a number of publications which detail both short-range project funding and long-range transportaaion palnning - documents are the Transporation Imporvement Program (TIP) and the Regional Transporation Plan (RTP), respectively. These documents are important cornerstones in the foundation of regional planning and tracking these documents, their content, and when they are to be renewed will be vitally important to XXXXXXXXXXXXXXXX
+### Regional Planning Page
+This page contains information about the regional agencies responsible for transposition planning along the corridor. In the US, regional transportation planning is performed by metropolitan planning organizations (MPO) or regional transportation planning organizations (RTPO) - these organizations are federally mandated and federally funded and are in place to ensure regional cooperation with regards to transportation planning. In Canada, the regional planning is performed at the Regional District level - the map currently only contains regional planning documents for Vancouver Metro/TransLink. This layer of governance directs and allocates investments for transportation projects, establish shared vision and goals for the future of the regions, and acts as a conduit that facilitate collaboration between residents, interested parties, and other levels of government both at the federal, state, and local levels. In acting in the capacity stated above, regional transportation planners produce a number of publications which detail both short-range project funding and long-range transportation planning. For the US regional planners, these documents are the Transportation Improvement Program (TIP) and the Regional Transportation Plan (RTP), respectively. The Canadian regional transportation planners also release documents that are similar to and act in the same capacity as the documents stated above - they are currently classified in the dashboard with the TIP, RTP, or CEDS acronyms for simplicity.
 
-The page details re
+This page contains a few features to help track these documents and to provide information on the US and CA regional planning organizations:
 
+Census Metrics Table
 
+* This table is the result of spatially aggregating the census tract layers using the US MPO/RTPO boundaries
+  + This table does not currently contain data for Vancouver Metro
+
+Documents Timeline
+
+* This plot graphically depicts when the different US/CA regional planning organization's planning documents are expected to be rewritten or updated
+  + The RTP documents are supposed to be updated every four years 
+  + The TIP documents are supposed to be updated every year
+  + The expected document update dates seen in this plot are estimates 
+   + These estimates are based off of the information above and when the document was published or last updated
+   + IT was to determine for some of the documents when they were last updated and some of the information contained in this plot may be incorrect
+    
+  
 ### Data Center 
-This page allows the user to examine and retreive the data contained in the base map. This page contains two tables - the left hand table contains information on all the layers which are currnetly included in the base map and the right hand table details the information contained in each layer. All layers have been previously processed in order to remove superflous information, clean or reconstruct data of poor quality, spatially buffer to limit the original extent of the data, or two combine similar data that were retreived from sepeate sources. Links are provided to the data's original source as well as features that allow the user to download the processed data. 
+This page allows the user to examine and retrieve the data contained in the base map. This page contains two tables - the left hand table contains information on all the layers which are currently included in the base map and the right hand table details the information contained in each layer. All layers have been previously processed in order to remove superfluous information, clean or reconstruct data of poor quality, spatially buffer to limit the original extent of the data, or two combine similar data that were retreived from separate sources. Links are provided to the data's original source as well as features that allow the user to download the processed data. 
 
 Default Map Data Layers table
 
 + Contains information for all layers in base map
 + Contains notes on the data layer - enabled by user click
 + Contains links to the original data source - enabled by user click
-+ Clicking on a singular data layer will select that layer to be displayed in the righhand table
++ Clicking on a singular data layer will select that layer to be displayed in the right-hand table
 + The contents of this table can be downloaded or copied by using the buttons at the top of the table
 
 Raw Data for Selected Layer
@@ -142,20 +188,11 @@ Raw Data for Selected Layer
 + Displays all the information for selected layer that is shown in the base map 
 + The contents of this table can be downloaded or copied by using the buttons at the top of the table
 
-
 ### Help Center
-Selecting this menu item will not generate a new diaplay window but will two buttons directly below in the sidebar menu. These buttons redisplay the into-modal seen when the page first loads and takes you to this document.
+Selecting this menu item will not generate a new display window but will two buttons directly below in the sidebar menu. These buttons re-display the into-modal seen when the page first loads and takes you to this document.
 
 ## Sharing this Dashboard
-This dashboard's main intent is to enable UHSGT planners to xxxxxxxxxxxxxxxxxxx such that they can identify stakeholders at the corridor level early in the planning process. This dashboard was not meant to be public facing product or made for the use by the general public. Users who have been granted access to this dashboard should ask for permission before sharing this with others. Please contact your WSDOT repersentative. 
-
-
-## General Use
-
-
-
-
-
+This dashboard's main intent is to enable UHSGT planners to identify corridor stakeholders early in the planning process. This dashboard was not meant to be a public facing product or made for the use by the general public. Users who have been granted access to this dashboard should ask for permission before sharing this with others. Please contact your WSDOT representative for permission to do so. 
 
 
 
