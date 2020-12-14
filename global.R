@@ -11,7 +11,7 @@
 
 #package install and load~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(rgdal) #for inport/outport
+library(rgdal) #for input/output
 library(sf)
 library(mapview)
 library(leaflet)

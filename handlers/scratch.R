@@ -62,3 +62,42 @@
 #         'corrdior_buffer') %>%
 #   st_as_sf() %>%   
 #   mapview()
+
+
+
+#install.packages("rgdal) #for inport/outport
+install.packages("sf")
+install.packages("mapview")
+install.packages("leaflet")
+install.packages("leafpop")
+install.packages("units")
+
+install.packages("data.table")
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("magrittr")
+install.packages("skimr")
+install.packages("textclean")
+
+install.packages("readxl")
+install.packages("janitor")
+install.packages("forcats")
+
+install.packages("plotly")
+install.packages("viridis")
+install.packages("DT")
+install.packages("ggdark")
+
+install.packages("shiny")
+install.packages("shinycssloaders")
+install.packages("shinyWidgets")
+install.packages("shinydashboard")
+install.packages("shinydashboardPlus")
+install.packages("rintrojs")
+install.packages("htmlwidgets")
+install.packages("dashboardthemes")
+install.packages("shinyalert")
+install.packages("timevis")
+install.packages("mapedit")
+install.packages("brio")
+install.packages("lwgeom")

@@ -3,12 +3,6 @@ title: "![](./www/flatart_long.jpg){width=9in}"
 author: "Michael Gaunt mike.gaunt@wsp.com"
 date: '2020-11-11'
 output:
-  word_document:
-    toc: yes
-    toc_depth: '2'
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
   html_document:
     number_sections: yes
     theme: cerulean
@@ -17,6 +11,12 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  word_document:
+    toc: yes
+    toc_depth: '2'
 ---
 
 ```{r setup, include=FALSE}
@@ -27,6 +27,33 @@ knitr::opts_chunk$set(echo = TRUE)
 This document serves as a guide to the UHSGT dashboard back-end . This guide is not intended to teach how to use R but to describe the main components, files, directories, update methods, and deployment strategies regarding the application
 
 The UHSGT dashboard was made using the R language and Shiny dashboard framework. Both R and Shiny require specific domain knowledge to implement; however, this application was built in a way to minimize 
+
+# Required Materials
+
+* [Required] Download an R integrated development environment (IDE)
+    + You will need and IDE to redeploy or change the application
+    + The desktop RStudio IDE (https://rstudio.com/products/rstudio/) was used to develop this application
+* [Required] A local copy of the full application file list 
+    + Please contact the maintainer of the application 
+    + This is to ensure that you have all the files required for development
+* [Required] Register a free account with shinyapps.io
+    + You will need a singular account for the application
+    + Shinyapps.io is the service that is currently hosting the website
+    + An account is needed to redeploy or publish the application
+    + An account can be set up here: https://www.shinyapps.io
+      + Addtionaly infomration: https://shiny.rstudio.com/articles/shinyapps.html
+    + Your account will eventually be registered and linked to your desktop IDE
+    + The application is currently being hosted on the developers shinyapps.io
+* [Suggested] Github account
+    + This is used to save, publish, and to track versions of the application's files
+      + Breif how-to use git hub from the comand line: https://dzone.com/articles/top-20-git-commands-with-examples
+    + The files are currently being tracked on the developers orginal github: https://github.com/michaelgaunt404/uhsgt_dashboard
+      + Only the R scripts are being tracked via Github - data files, etc. are saved locally
+    + Any future development should be tracked with a new github account
+    + An account can be set up here: https://github.com/
+    + This site is currently being used to publish and link to the Operation Manual 
+      + This document (and other documents in general) do not need to be published on Github
+      + Supporting documents can be published on a google drive but the links must be changed in the code
 
 # Files and Directories 
 Please see the below image that details the dashboards files. The ensuing bullet list describes the items and folders as seen in the image.     
@@ -39,7 +66,7 @@ Please see the below image that details the dashboards files. The ensuing bullet
     + global.R 
       + Initializes the R environment
       + Loads the required packages
-        + If you are doing any maintenance on the application or redeploying the application you will need to make sure all of these libraries are installed on you machine and loaded for your session
+        + If you are doing any maintenance on the application or redeploying the application you will need to make sure all of these libraries are installed on you machine and loaded for your session (see code block at the end of this section)
       + Loads custom functions needed for the application
       + It calls two files at the end of the script after initializing the environment – data_mapper.R and data_scripts.R 
         + data_mapper.R processes/preps the data when the application starts and data_scripts.R contains static stings that are called by the application modals and information buttons
@@ -76,6 +103,56 @@ Please see the below image that details the dashboards files. The ensuing bullet
     + The .Rmd files are the editable manuals that create word documents when knitted
       + Is is a Markdown language that can also contain executable R code
       + Please see this site for any additional information: https://rmarkdown.rstudio.com/
+
+### Package Install
+
+As of: 
+```{r echo=FALSE}
+Sys.Date()
+```
+
+all the packages listed below are required to build, run, and deploy the application:
+
+```{r eval=FALSE}
+install.packages("rgdal") #for input/output
+install.packages("sf")
+install.packages("mapview")
+install.packages("leaflet")
+install.packages("leafpop")
+install.packages("units")
+
+install.packages("data.table")
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("magrittr")
+install.packages("skimr")
+install.packages("textclean")
+
+install.packages("readxl")
+install.packages("janitor")
+install.packages("forcats")
+
+install.packages("plotly")
+install.packages("viridis")
+install.packages("DT")
+install.packages("ggdark")
+
+install.packages("shiny")
+install.packages("shinycssloaders")
+install.packages("shinyWidgets")
+install.packages("shinydashboard")
+install.packages("shinydashboardPlus")
+install.packages("rintrojs")
+install.packages("htmlwidgets")
+install.packages("dashboardthemes")
+install.packages("shinyalert")
+install.packages("timevis")
+install.packages("mapedit")
+install.packages("brio")
+install.packages("lwgeom")
+```
+
+Copy and paste this code into an empty script and run each line (ctrl + enter) - this only needs to be perfomed once.
 
 ## Sub Folders
 
@@ -126,8 +203,8 @@ Please see the below image that details the dashboards files. The ensuing bullet
     + Contains dummy shape-files that are rewritten when the user generates new features and would like to download them 
     + When they are downloaded the shiny app writes those features here and zips this folder for the user
 *	Rsconnect folder 
-    + This contains information regarding the deployment of the app on shiny-apps.io 
-    + It is currently linked to XXXXXXXXXXXXXXXXXXX
+    + This contains information regarding the deployment of the app on shinyapps.io 
+    + It is automatically made when 
     + You will need to update this folder if it is deployed elsewhere
 *	shape-files_raw_cache folder
     + Contains all the raw shape-files that are used and were potentially going to be used for the dashboard 
@@ -282,6 +359,7 @@ The application can be ran locally either in an R window or in a local host via 
 
 ## Redeploying the Application
 Note: the process below assumes the application is deployed on shinyapps.io (https://www.shinyapps.io/)
+Note: the below process generally follows the process process described on this site: https://shiny.rstudio.com/articles/shinyapps.html
 
 After changes have been made to the application and it is stable, the application can be redeployed to the hosting service. Once the application is redeployed, users will have access to the changes that were made since the last deployment. Before the application is deployed, the R environment needs to be cleaned - remove all variables that are in the environment and detach all packages that are currently loaded. To do this, close R and do not save any the environment or the .RData file, this ensures that no hidden dependencies are in the global environment the next time R is opened. Once closed, reopen R and run either the either the *global.R*, *ui.R*, or *server.R* scripts to run the application locally. Following this process ensures that application are capable of building the application and does not depend on any variables that had been created during earlier development. Once the application is running, the app can be pushed to the shinyapps.io. 
 
@@ -294,10 +372,10 @@ Click on the "blue circular icon" to the right of the "run-app" button on the na
 * server.R
 * data_mapper.R
 * data_scripts.R
-* corridor_buffer items
-* map_ready items
-* mapedit_tmp items
-* www items
+* all corridor_buffer folder items
+* all map_ready folder items
+* all mapedit_tmp folder items
+* all www folder items
 
 
 
