@@ -62,8 +62,8 @@ server <- function(input, output) {
       easyClose = TRUE
     ))
   })
-  # library(shinyalert)
-  #Mapedit input received
+
+    #Mapedit input received
   observeEvent(input$map_btn_filter, {
     shinyalert(title = "Input Received!", type = "success",
                showConfirmButton = T, closeOnEsc = T,
@@ -99,7 +99,9 @@ server <- function(input, output) {
   
   #us_census inputs=====
   index_census_select_columns = reactive({
-    index_census_select_columns = census_selection_index[name %in% input$census_column_filter, var_name]
+    index_census_select_columns = census_selection_index %>%  
+      filter(var_name != "Median Income Status") %>% 
+      .[name %in% input$census_column_filter, var_name]
   })
   
   output$layer_color <- renderUI({
@@ -112,6 +114,10 @@ server <- function(input, output) {
   
   census_color = reactive({
     input$census_color
+  })
+  
+  census_color_ca = reactive({
+    input$census_color_ca
   })
   
   census_map_data_zcol = "Total Population (20-64yrs)"
@@ -156,7 +162,7 @@ server <- function(input, output) {
     req(census_color())
     
     tmp_click = input$full_map_shape_click
-    tmp_bounds = bbox_reactive_d()
+    # tmp_bounds = bbox_reactive_d()
     
     centileBreaks <- hist(plot = F, notshared_census %>%
                             select(census_color()) %>%
@@ -174,22 +180,7 @@ server <- function(input, output) {
         select(census_color()) %>%
         .[[1]]
     }
-    
-    output$map_var_plot_sub = renderPlot({
-      filter_sf(notshared_census, 
-                xmin = tmp_bounds$west, xmax = tmp_bounds$east,
-                ymin = tmp_bounds$south, ymax = tmp_bounds$north) %>% 
-        st_set_geometry(NULL) %>%
-        select(census_color()) %>%
-        set_names("data") %>%
-        ggplot(aes(x = data)) +
-        geom_histogram(color = "black", bins = 20) +
-        geom_vline(xintercept = tmp_vert) +
-        theme +
-        xlim(c(min(centileBreaks), max(centileBreaks))) +
-        labs(y = "Count", title = "Subset (map bounding box)")
-    })
-    
+
     output$map_var_plot = renderPlot({
       notshared_census %>%
         st_set_geometry(NULL) %>%
@@ -207,19 +198,16 @@ server <- function(input, output) {
   
   #us_census inputs=====
   ca_index_census_select_columns = reactive({
-    ca_index_census_select_columns = ca_census_selection_index[name %in% input$ca_census_column_filter, var_name]
+    ca_index_census_select_columns = ca_census_selection_index[name %in% input$ca_census_column_filter, var_name] %>%  
+      str_to_title()
   })
-  
-  output$layer_color_ca <- renderUI({
+
+    output$layer_color_ca <- renderUI({
     awesomeRadio("census_color_ca", 
                  "Census Layer Color Metric", 
                  selected = ca_index_census_select_columns()[1],
                  choices = ca_index_census_select_columns(), inline = T
     )
-  })
-  
-  census_color_ca = reactive({
-    input$census_color_ca
   })
   
   census_map_data_zcol = "Population (2016)"
@@ -260,17 +248,17 @@ server <- function(input, output) {
   })
   
   
-  bbox_reactive <- reactive({
-    input$full_map_bounds
-  })
+  # bbox_reactive <- reactive({
+  #   input$full_map_bounds
+  # })
   
-  bbox_reactive_d <- bbox_reactive %>% debounce(2000)
+  # bbox_reactive_d <- bbox_reactive %>% debounce(2000)
   
   #creates front display plots based on click and zoom
   observe({
     req(census_color_ca())
     tmp_click = input$full_map_shape_click
-    tmp_bounds = bbox_reactive_d()
+    # tmp_bounds = bbox_reactive_d()
     
     centileBreaks <- hist(plot = F, notshared_census_ca %>%
                             select(census_color_ca()) %>%
@@ -289,21 +277,6 @@ server <- function(input, output) {
         .[[1]]
     }
     
-    output$map_var_plot_sub_ca = renderPlot({
-      filter_sf(notshared_census_ca, 
-                xmin = tmp_bounds$west, xmax = tmp_bounds$east,
-                ymin = tmp_bounds$south, ymax = tmp_bounds$north) %>% 
-        st_set_geometry(NULL) %>%
-        select(census_color_ca()) %>%
-        set_names("data") %>%
-        ggplot(aes(x = data)) +
-        geom_histogram(color = "black", bins = 20) +
-        geom_vline(xintercept = tmp_vert) +
-        theme +
-        xlim(c(min(centileBreaks), max(centileBreaks))) +
-        labs(y = "Count", title = "Subset (map bounding box)")
-    })
-    
     output$map_var_plot_ca = renderPlot({
       notshared_census_ca %>%
         st_set_geometry(NULL) %>%
@@ -320,39 +293,118 @@ server <- function(input, output) {
   })
   
   #map_object creation====
-  census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
-    map_files_dfs[[.]]
+  # census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
+  #   map_files_dfs[[.]]
   
-  ca_census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
-    map_files_dfs[[.]]
+  # {
+  #   
+  # 
+  #   # leaflet() %>% 
+  #   #   addTiles() %>% 
+  #   #   addPolygons(data = bobo, 
+  #   #               # color = ~pal(tmp),
+  #   #               popup = ~label, 
+  #   #               group = "census") %>% 
+  #   #   addLayersControl(
+  #   #     position = "topleft",
+  #   #     baseGroups = c('CartoDB.Positron', 'CartoDB.DarkMatter', 'OpenStreetMap', 'Esri.WorldImagery', "OpenTopoMap"),
+  #   #     overlayGroups = c("heads", "tails", "census"))
+  #   
+  # }
+  
+  # ca_census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
+  #   map_files_dfs[[.]]
   
   #makes the reactive map
-  reactive_mappp = reactive({
-    map_files_used = map_ready
-    tmp = which(map_ready$processed_name %in% "US_Census")
-    map_files[[tmp]] = census_map()
-    
-    tmp = which(map_ready$processed_name %in% "CA_Census")
-    map_files[[tmp]] = census_map_ca()
-    
-    map_to_be_shown = map_files %>%
-      reduce(`+`)
-    
-    map_to_be_shown@map
-  })
+  # reactive_mappp = reactive({
+  #   map_files_used = map_ready
+  #   tmp = which(map_ready$processed_name %in% "US_Census")
+  #   map_files[[tmp]] = census_map()
+  #   
+  #   tmp = which(map_ready$processed_name %in% "CA_Census")
+  #   map_files[[tmp]] = census_map_ca()
+  #   
+  #   map_to_be_shown = map_files %>%
+  #     reduce(`+`)
+  #   
+  #   map_to_be_shown@map
+  # })
   
   #takes reactive map and makes main default map
+  # output$full_map = renderLeaflet({
+  #   req(census_color())
+  #   reactive_mappp() %>% 
+  #     hideGroup(hide_layer_list) %>% 
+  #     base_map_options()
+  # })
+  # 
+  #test_area============
   output$full_map = renderLeaflet({
-    req(census_color())
-    reactive_mappp() %>% 
+    map_to_be_shown = map_files[-c(tmp_ca, tmp_us)] %>%
+      reduce(`+`) 
+    
+    map_to_be_shown@map %>% 
       hideGroup(hide_layer_list) %>% 
       base_map_options()
   })
   
+  
+  observe({
+    req(input$census_color)
+    req(input$census_color_ca)
+    
+    tmp_col = which(census_selection_index[name != "All", var_name] %in% input$census_color) + 3
+    tmp_us_index = notshared_census_lfpopup[,tmp_col] %>%  
+      st_set_geometry(NULL) %>% 
+      .[[1]]
+    pal = colorNumeric(palette = viridis(10),
+                       domain = tmp_us_index)
+    
+    tmp_col_ca = which(ca_census_selection_index[name != "All", var_name] %>%  str_to_title() %in% input$census_color_ca) + 2
+    tmp_ca_index = notshared_census_ca_lfpopup[,tmp_col_ca] %>%  
+      st_set_geometry(NULL) %>% 
+      .[[1]]
+    pal_ca = colorNumeric(palette = viridis(10),
+                       domain = tmp_ca_index)
+    
+    leafletProxy("full_map") %>%
+      clearControls() %>%
+      addPolygons(data = notshared_census_lfpopup, fillColor = ~pal(tmp_us_index),
+                  color = "black",
+                  opacity = 1,
+                  fillOpacity = .5,
+                  weight = 1, 
+                  label = tmp_us_index,
+                  popup = ~notshared_census_lfpopup$label, 
+                  group = paste0("US Census: ", input$census_color)) %>%
+      addLegend(position = "topright",
+                pal = pal, tmp_us_index, title = paste0("US Census: ", input$census_color)) %>% 
+      addPolygons(data = notshared_census_ca_lfpopup, fillColor = ~pal_ca(tmp_ca_index),
+                  color = "black",
+                  opacity = 1,
+                  fillOpacity = .5,
+                  weight = 1, 
+                  label = tmp_ca_index,
+                  popup = ~notshared_census_ca_lfpopup$label, 
+                  group = paste0("CA Census: ", input$census_color_ca)) %>%
+      addLegend(position = "topright",
+                pal = pal_ca, tmp_ca_index, title = paste0("CA Census: ", input$census_color_ca)) %>% 
+      addLayersControl(
+              position = "topleft",
+              baseGroups = c('CartoDB.Positron', 'CartoDB.DarkMatter', 'OpenStreetMap', 'Esri.WorldImagery', "OpenTopoMap"),
+              overlayGroups = c(paste0("US Census: ", input$census_color), 
+                                paste0("CA Census: ", input$census_color_ca),
+                                map_ready$processed_name[-c(tmp_ca, tmp_us)] %>%  
+                                  str_replace_all("_", " ")) %>% 
+                str_sort())
+  })
+
   #makes mapedit map
   edits <- callModule(editMod, "editor", 
-                      isolate(reactive_mappp() %>%
-                                hideGroup(hide_layer_list_edit) %>% 
+                      isolate(map_files %>%
+                                reduce(`+`) %>%  
+                                .@map %>% 
+                                hideGroup(hide_layer_list) %>% 
                                 base_map_options()))
   
   #ping_mapedit====
@@ -423,7 +475,7 @@ server <- function(input, output) {
                             "function(settings, json) {",
                             "$('body').css({'font-family': 'Calibri'});",
                             "}"),
-                          buttons = list("csv", "excel", "copy", "pdf")
+                          buttons = list("csv", "excel", "copy")
                         ))
           })
           
@@ -445,7 +497,7 @@ server <- function(input, output) {
                             "function(settings, json) {",
                             "$('body').css({'font-family': 'Calibri'});",
                             "}"),
-                          buttons = list("csv", "excel", "copy", "pdf")
+                          buttons = list("csv", "excel", "copy")
                         ))
           })
           
@@ -528,20 +580,20 @@ server <- function(input, output) {
             map_ready_fltrd = map_ready
             data[[tmp]] = census_map_data
             map_ready_fltrd[tmp, "zcol"] = census_map_data_zcol
-            map_files_dfs_fltrd = data %>% 
+            map_files_dfs_fltrd = data %>%
               map(st_filter, tmp_buffer)
-            
-            index_bffr_fltrd_map = map_files_dfs_fltrd %>%  map( function(x) x %>% 
+
+            index_bffr_fltrd_map = map_files_dfs_fltrd %>%  map( function(x) x %>%
                                                                    st_dimension() %>%
-                                                                   length()) %>% 
-              unlist() %>%  
+                                                                   length()) %>%
+              unlist() %>%
               data.table(empty_list = .) %>%
               .[,`:=`(rwnms = rownames(.) %>%  as.numeric())] %>%
               .[which(empty_list == 0),rwnms]
-            
+
             map_files_dfs_fltrd = map_files_dfs_fltrd[-index_bffr_fltrd_map]
             map_ready_fltrd = map_ready_fltrd[-index_bffr_fltrd_map,]
-  
+
             map_edit_maps = list(map_files_dfs_fltrd,
                                  map_ready_fltrd$zcol %>%  str_to_title(),
                                  map_ready_fltrd$processed_name) %>%
@@ -554,15 +606,15 @@ server <- function(input, output) {
                        homebutton = F,
                        popup = popupTable(., zcol = -c(ncol(.)-1, ncol(.)))
                      ))
-            
-            map_edit_map = map_edit_maps  %>%  
-              reduce(`+`) 
-            
-            map_edit_map@map %>% 
-              hideGroup(hide_layer_list_edit) %>% 
-              base_map_options() 
+
+            map_edit_map = map_edit_maps  %>%
+              reduce(`+`)
+
+            map_edit_map@map %>%
+              hideGroup(hide_layer_list_edit) %>%
+              base_map_options()
           })
-          
+
           #ca_census_subset_calculations=========
           data_for_plot_ca = notshared_census_ca %>%
             st_filter(., tmp_buffer) %>%
@@ -609,7 +661,7 @@ server <- function(input, output) {
                             "function(settings, json) {",
                             "$('body').css({'font-family': 'Calibri'});",
                             "}"),
-                          buttons = list("csv", "excel", "copy", "pdf")
+                          buttons = list("csv", "excel", "copy")
                         ))
           })
 
@@ -631,7 +683,7 @@ server <- function(input, output) {
                             "function(settings, json) {",
                             "$('body').css({'font-family': 'Calibri'});",
                             "}"),
-                          buttons = list("csv", "excel", "copy", "pdf")
+                          buttons = list("csv", "excel", "copy")
                         ))
           })
 
@@ -771,7 +823,7 @@ server <- function(input, output) {
         extensions = c('Buttons', "FixedColumns"), 
         options = list(
           scrollY = 370, pageLength = 900, fixedColumns = TRUE,
-          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel'),
           initComplete = JS(
             "function(settings, json) {",
             "$('body').css({'font-family': 'Calibri'});",
@@ -865,7 +917,7 @@ server <- function(input, output) {
         extensions = 'Buttons', 
         options = list(
           scrollY = T, pageLength = 900,
-          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel'),
           initComplete = JS(
             "function(settings, json) {",
             "$('body').css({'font-family': 'Calibri'});",
@@ -886,7 +938,7 @@ server <- function(input, output) {
         extensions = 'Buttons', 
         options = list(
           scrollY = 700, pageLength = 900,
-          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+          dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel'),
           initComplete = JS(
             "function(settings, json) {",
             "$('body').css({'font-family': 'Calibri'});",

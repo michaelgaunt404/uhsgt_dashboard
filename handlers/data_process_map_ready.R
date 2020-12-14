@@ -238,15 +238,18 @@ tmp_file = read_xlsx("MPO_resource_table.xlsx") %>%
   remove_empty("cols") %>%
   na_if("NA") %>%
   filter(!is.na(Key)) %>%
-  mutate(Date = as.character(Date) %>%
-           na_if("NA") %>%  convert_to_date(),
+  mutate(`Pub. Date` = as.character(Date) %>%
+           na_if("NA") %>%  
+           convert_to_date(),
+         `Exp. Update Year` = (`Pub. Date`+months(12*as.numeric(Update_time))) %>% 
+           format(.,"%Y"),
          Web = paste0('<a href = "', Web, '"> Link to website </a>'),
          Pub_Web = paste0('<a href = "', Pub_Web, '"> ', Publication, ' </a>')) %>%
   filter(Include == "T") %>%
-  select(Key, Acronym, Type, Date, Pub_Web, Web) %>% 
+  select(Key, Acronym, Type, `Pub. Date`, Pub_Web, Web) %>% 
   pivot_wider(names_from = "Type",
               # id_cols = c("Key", "Acronym", "Web"),
-              values_from = c("Pub_Web", "Date")) %>%
+              values_from = c("Pub_Web", "Pub. Date")) %>%
   rename_all(~ str_remove(., "Pub_Web_"))
 
 tmp_index = which(processed_shape_files$processed_name == "WA_MPO-RTPO")
@@ -268,12 +271,15 @@ merged_mpos = half_polished[tmp_index][[1]] %>%
          clean_names() %>% 
          st_cast("MULTIPOLYGON")) %>% 
   shapefile_pair_collapser() %>% 
+  mutate(name = ifelse(name == "Southwest Washington RTPO",
+                       "Cowlitz-Wahkiakum Council of Governments", 
+                       as.character(name))) %>% 
   merge(., tmp_file, by.x = "name", by.y = "Key") %>%
   mutate(name = str_glue('{name} ({Acronym})'),
          Area = st_area(.) %>%
            units::set_units(mile^2)) %>%  
   rename(`Data Source` = "data_source") %>%
-  select(name, Web, TIP, RTP, CEDS, Date_TIP, Date_RTP, Date_CEDS, Area, `Data Source`, geometry)
+  select(name, Web, TIP, RTP, CEDS, `Pub. Date_TIP`, `Pub. Date_RTP`, `Pub. Date_CEDS`, Area, `Data Source`, geometry)
 
 # merged_mpos = st_join(merged_mpos, tmp_pop) %>%
 #     group_by(name) %>%

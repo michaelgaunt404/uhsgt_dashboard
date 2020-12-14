@@ -6,9 +6,6 @@ output:
   word_document:
     toc: yes
     toc_depth: '2'
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
   html_document:
     number_sections: yes
     theme: cerulean
@@ -17,6 +14,9 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
 ---
 
 ```{r setup, include=FALSE}
@@ -30,12 +30,11 @@ The Ultra High Speed Ground Transportation (UHSGT) Planning Dashboard is a tool 
 The main features included in this map are as follows: 
 
 * A large interactive map of the corridor from Eugene, OR. to Vancouver, British Columbia
-  + This map contains a number of different layers and displays easily accessible information on layer features
+  + This map contains a number of different layers and displays layer feature meta-data
   + This map encourages the user to explore the corridor at a high level
 * The ability for users to provide/create their own geometry and see how it interacts with the default map 
   + This feature increases the user's ability to target areas and map layers
-  + Users can provide
-
+  + Users can download these features (.shp format) 
 
 # User Manual
 This document stands to serve as an operation manual on how to use and navigate the dashboard. In addition to this document, the dashboard also contains a number of information buttons that can be clicked on that provide information about a particular page or dashboard functionality.
@@ -53,31 +52,31 @@ Top Header Bar
 
 Left Sidebar
 
-* As mentioned above the sidebar can be collapsed to make more room for the main display
+* As mentioned above, the sidebar can be collapsed to make more room for the main display
   + The sidebar can still be used to navigate the site when collapsed 
 * The left sidebar contains the links to different pages on the dashboard
-  + Map Dashboard is the default page and contains two sub-pages 
-    + The Base Map page displays the base map and map input controls on the right sidebar
-    + The Filtered Map page contains all of the features that allow for user-defined geometry, map sub-setting, and metric aggregation
-  + The Regional Planning page contains information pertaining to US MPOs and Canadian Regional Districts (RTDs)
+  + **Map Dashboard** is the default page and contains two sub-pages 
+    + The **Base Map** page displays the base map and map input controls on the right sidebar
+    + The **Filtered Map** page contains all of the features that allow for user-defined geometry, map sub-setting, and metric aggregation
+  + The **Regional Planning** page contains information pertaining to US MPOs and Canadian Regional Districts (RTDs)
     + In particular, this page details when specific planning documents will be redrafted and published by the MPOs/RTDs 
     + The US documents tracked by this dashboard are the Comprehensive Economic Development Strategy (CEDS), Regional Transportation Plan (RTP), and the Transportation Improvement Program (TIP)
     + The Canadian documents traced by this dashboard are equivalent to that of those specified above
-  + The Data Center page contains tables detailing the layers used for the base map
-  + The Help Center widget does not link to a new page but displayed additional help and information buttons when clicked
+  + The **Data Center** page contains tables detailing the layers used for the base map
+  + The **Help Center** widget does not link to a new page but displayed additional help and information buttons when clicked
   
 Main Display
 
-* All clickable page links (except "Help Center") on the left sidebar  will take the user to new display page 
+* All clickable page links (except "Help Center") on the left sidebar will take the user to new display page 
 * The main displays are made of containers that hold/show maps, plots, buttons, or inputs that the user can interact with
 
 ## Dashboard Pages
-This section describes in more detail the different pages of the dashboard and their functionality. 
+This section describes the different pages of the dashboard and their functionality in more detail. 
 
 ### Base Map 
 This page displays the base corridor map and it's census inputs. 
 
-The default map displays a multitude of layers depicting jurisdictional boundaries and important transportation features located along corridor. The extent of the base map reaches from Eugene, Oregon to Vancouver, British Columbia and from the Pacific Ocean to the Cascades. Many of the map layers extents were much larger than what is shown in the dashboard but were buffered/reduced to limit computational load and to narrow the region for planning efforts. As implied earlier, the map contains layers for British Columbia, Washington, and Oregon - not all states or regions have the same type of data or types of layers available to them. This was a result of data being available for certain regions and not others as well as differences in data between the US and CA.
+The default map displays a multitude of layers depicting jurisdictional boundaries and important transportation features located along corridor. The extent of the base map reaches from Eugene, Oregon to Vancouver, British Columbia and from the Pacific Ocean to the Cascades. Many of the map layers' extents were much larger than what is currently shown in the dashboard but were buffered/reduced to limit computational load and to narrow the region for planning efforts. As implied earlier, the map contains layers for British Columbia, Washington, and Oregon - not all states or regions have the same type of data or types of layers available to them. This was a result of data being available for certain regions and not others as well as differences in data between the US and CA.
 
 #### Map Info
 
@@ -88,14 +87,16 @@ The default map displays a multitude of layers depicting jurisdictional boundari
   + See the upper left-hand corner of the map
   + The default displayed layers are Regional Planning and US/CA Census tracts
   * The US and CA Census layer's name will change depending on what Census metric is being used to color scale census tracts
-  * he default metric for the US/CA Census layers are Total Population and Population(2016), repetitively
-    * The metric used to color US Census tract polygons can be changed by interacting with the Census Filters 
+  * The default metric for the US/CA Census layers are Total Population and Population(2016), respectively
+    * The metric used to color US Census tract polygons can be changed by interacting with the Census Filters menu
       * See the sidebar drop-down to the right of the main display
 * The number of metrics per US an CA can be reduced
   * Filter Census Data (by group) changes/limits the available Census Layer Color Metric options and which metrics are displayed on the map
 * The right sidebar contains inputs the user can use to augment the map 
   * The user can limit the number of Census metrics shown in the map pop-up window by 
-  * The user can change the census layer coloring by changing 
+  * The user can change the census layer coloring be changed by interacting with the Census Filters menu
+  * The colors used for the US and CA census layers can be changed individually
+  * The metric used to color the map will also be displayed in the histogram below each menu input
 * The right sidebar displays two plots for the US and Canadian drop downs
   * These plots display histograms for the selected variable used to color each census layer by
   * The top plot displays the histogram for the entire corridor for the specified hairball
@@ -118,7 +119,7 @@ This page is composed of two containers - the top input container and the lower 
 * Spatially Filtered Maps
   + This is the default tab for the tab box
   + This tab Displays two maps - the left is editable and the right displays those edits and returns buffered corridor map
-    + The buffered map will not load until the process has been initiated by the user
+    + The buffered map (right map) will not load until the process has been initiated by the user
 * Metric Plots
   + This tab displays plotted aggregated metrics based on the geometries defined by the user geometries and the resulting subsetted corridor
   + The top plot displays the Percent Difference between the corridor and corridor subset for all US Census variables

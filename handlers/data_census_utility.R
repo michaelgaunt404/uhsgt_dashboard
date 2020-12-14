@@ -111,7 +111,7 @@ list(wirte_out_file_names[[1]],
          )
 
 #Tribal Lands===================================================================
-#tidycensus does not have first peoples layer so we have to use 'tigris'
+#tidycensus does not have first peoples layer so we have to use 'tigris' and merge with shapefiles
 
 #data import 
 data_first_people = readxl::read_xlsx("data_source_list.xlsx", sheet = "tidycensus") %>%  

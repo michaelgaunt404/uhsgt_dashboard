@@ -1,4 +1,3 @@
-# install.packages("htmltools")
 # Define UI for data upload app ----
 ui = dashboardPagePlus(
   useShinyalert(),
@@ -28,7 +27,7 @@ ui = dashboardPagePlus(
                                          menuItem("Regional Planning", tabName = "mpo", icon = icon("calculator")),
                                          menuItem("Data Center", tabName = "data_center", icon = icon("table")),
                                          menuItem("Help Center", tabName = "help_center", icon = icon("table"),
-                                                  actionButton(inputId = "into_button", label = "Show Into Msg",
+                                                  actionButton(inputId = "into_button", label = "Show Intro Msg",
                                                              icon("info")
                                                   ),
                                                   actionButton(inputId = "learn_more", label = "Operation Manual",
@@ -73,17 +72,17 @@ ui = dashboardPagePlus(
     tags$style(type = "text/css", "#full_map {height: calc(100vh - 90px) !important;}"),
     tags$style(type = "text/css", "#data_overview {height: calc(100vh - 90px) !important;}"),
     tabItems(
-      #TAB: MAP_DB====================================================================
+      #TAB: MAP_DASHBOARD====================================================================
       tabItem("map_dahsboard",
               setShadow(class = "dropdown-menu"),
               fluidRow(box(height = 20)),
               fluidRow(
-                column(width = 9,
+                column(width = 8,
                        box(width = "100%",
                            id = "map_container",
                            leafletOutput("full_map") %>%  withSpinner(size = 3))
                 ),
-                column(width = 3,
+                column(width = 4,
                        tabBox(width = "100%",
                               tabPanel("Mapping Options",
                                        actionButton("map_btn","Base Map Page Info", icon("info")),
@@ -102,9 +101,11 @@ ui = dashboardPagePlus(
                                                boxPlus(width = "100%", title = "Metric Plots",
                                                        closable = F, collapsible = T, collapsed = F, 
                                                        status = "primary", solidHeader = T,
-                                                       plotOutput("map_var_plot", height = 150) %>%  withSpinner(),
-                                                       br(),
-                                                       plotOutput("map_var_plot_sub", height = 150) %>%  withSpinner())
+                                                       plotOutput("map_var_plot", height = 150) %>%  withSpinner()
+                                                       # ,
+                                                       # br(),
+                                                       # plotOutput("map_var_plot_sub", height = 150) %>%  withSpinner()
+                                                       )
                                        ),
                                        boxPlus(title = "CA Census Filters", width = "100%",
                                                closable = F, collapsible = T, collapsed = F, 
@@ -121,9 +122,11 @@ ui = dashboardPagePlus(
                                                boxPlus(width = "100%", title = "Metric Plots",
                                                        closable = F, collapsible = T, collapsed = F,
                                                        status = "primary", solidHeader = T,
-                                                       plotOutput("map_var_plot_ca", height = 150) %>%  withSpinner(),
-                                                       br(),
-                                                       plotOutput("map_var_plot_sub_ca", height = 150) %>%  withSpinner())
+                                                       plotOutput("map_var_plot_ca", height = 150) %>%  withSpinner()
+                                                       # ,
+                                                       # br(),
+                                                       # plotOutput("map_var_plot_sub_ca", height = 150) %>%  withSpinner()
+                                                       )
                                        )
                               )
                        )
@@ -150,7 +153,8 @@ ui = dashboardPagePlus(
                   tabPanel("Spatially Filtered Map", 
                            column(width = 6,
                                   editModUI("editor", height = 850) %>%  
-                                    withSpinner(size = 3)),
+                                    withSpinner(size = 3))
+                           ,
                            column(width = 6,
                                   leafletOutput("leaflet_map_edit", height = 850) %>%  withSpinner(size = 3))
                   ),
@@ -241,7 +245,7 @@ ui = dashboardPagePlus(
                                width = "100%", solidHeader = F, status = "primary",
                                boxPlus(closable = F, collapsible = T, collapsed = T, 
                                        width = "100%", solidHeader = T, status = "primary",
-                                       title = "Next 10 Renewed Publications",
+                                       title = "RTP Update Schedule",
                                        dataTableOutput("mpo_df_alt_soonest_10") %>%  withSpinner()),
                                boxPlus(collapsed = T, title = "Tracked Documents", 
                                        closable = FALSE, status = "primary", 

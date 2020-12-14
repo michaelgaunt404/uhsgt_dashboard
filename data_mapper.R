@@ -15,7 +15,7 @@
 # setwd("~/")
 # rstudioapi::getSourceEditorContext()$path %>%
 #   as.character() %>%
-#   gsub("/R.*","\\1", .) %>% 
+#   gsub("/R.*","\\1", .) %>%
 #   path.expand() %>%
 #   setwd()
 # }
@@ -51,7 +51,8 @@ census_selection_index = processed_shape_files %>%
   mutate(var_name = var_name %>% 
            str_remove_all(",")  %>% 
            str_trim() %>%  
-           str_to_title())  %>%  
+           str_to_title() %>% 
+           replace_non_ascii()) %>%  
   data.table()
 
 #makes census index object - only takes from the "CA_Census" group
@@ -136,11 +137,22 @@ map_files_dfs = list(map_ready$processed_name,
   )
 
 #SECTION: CENSUS_SUBSET_METRICS===============================================
+
+tmp_ca = which(map_ready$processed_name %in% "US_Census")
+tmp_us = which(map_ready$processed_name %in% "CA_Census")
+tmp_reg = which(map_ready$processed_name %in% "Regional_Planning")
+
 #us_census====
 index_clmn_rmv = c("Data Source", "Plain", "Geometry", "selected_")
 
+#used for a variety of widgets in the code - this is just the US Census 
 notshared_census = which(map_ready$processed_name %in% "US_Census") %>%
   map_files_dfs[[.]]
+
+#same object as above but with an additional popup column 
+#this as created as to not mess with any objects that called "notshared_census"
+#used int leaflet proxy
+notshared_census_lfpopup = leaflet_popup_maker(notshared_census, index_clmn_rmv)
 
 notshared_gg_tmp = notshared_census %>%
   data.frame() %>%
@@ -162,6 +174,8 @@ notshared_gg_tmp = melt(notshared_gg_tmp,
 #ca_census====
 notshared_census_ca = which(map_ready$processed_name %in% "CA_Census") %>%
   map_files_dfs[[.]]
+
+notshared_census_ca_lfpopup = leaflet_popup_maker(notshared_census_ca, index_clmn_rmv)
 
 notshared_gg_tmp_ca = notshared_census_ca %>%
   data.frame() %>%
@@ -202,30 +216,42 @@ mpo_census_merge_df = mpo_census_merge %>%
   select(Name, everything()) %>%  
   st_set_geometry(NULL) %>%  
   rename(`Area (sq. km)` = "Area") %>% 
-  mutate_at(index_numeric_columns_gg, round, 2)
+  mutate_at(index_numeric_columns_gg, round, 2) %>%  
+  filter(Name != "Metro Vancouver (Metro)")
 
 mpo_df_alt = read_xlsx("MPO_resource_table.xlsx") %>%  
   remove_empty(c("cols", "rows")) %>%  
   na_if("NA") %>% 
+  na_if("-") %>% 
   mutate(Date = convert_to_date(Date), 
+         Expected_update = (Date+months(12*as.numeric(Update_time))) %>% 
+           format(.,"%Y"),
          Name = paste0(Key, " (", Acronym, ")")) %>% 
   data.table() %>%  
-  mutate(html_link = str_glue("<a href = \"{Pub_Web}\"> Link to document </a>"))
+  mutate(html_link = ifelse(is.na(Pub_Web), 
+                            "No link",
+                            str_glue("<a href = \"{Pub_Web}\"> Link to document </a>")))
 
 mpo_df_alt_soonest_10 = mpo_df_alt %>% 
-  filter(Type != "LRP") %>%  
-  filter(!is.na(Type)) %>% 
-  mutate(months_to_next = ifelse(Type == "Tip", 12, 48),
-         Date = Date+months(months_to_next),
-         Status = ifelse(Date>Sys.Date(), "Upcoming", "Past"), 
-         `Days Until` = Date - Sys.Date()) %>% 
-  filter(Status == "Upcoming") %>% 
-  arrange(Date) %>%  
-  select(-Status) %>%  
-  head(10) %>% 
+  filter(Type == "RTP") %>%  
+  # filter(Type != "TIP") %>% 
+  # filter(!is.na(Type)) %>% 
+  # # mutate(#months_to_next = ifelse(Type == "Tip", 12, 48),
+  #        #Date = Date+months(months_to_next),
+  #        # Status = ifelse(Date>Sys.Date(), "Upcoming", "Past")
+  #        # ,
+  #        # `Days Until` = Date - Sys.Date()
+  #        # ) %>%
+  # filter(Expected_update > Sys.Date()) %>%
+  arrange(Expected_update) %>%  
+  # select(-Status) %>%  
+  # head(10) %>% 
+  mutate(Date = Date %>% 
+           format(.,"%Y-%m")) %>% 
   rename(`MPO/RTPO` = "Acronym", 
-         `Renewal Date` = "Date" ) %>% 
-  select(`MPO/RTPO`, Type, `Renewal Date`, html_link) 
+         `Pub. Date` = "Date",
+         `Exp. Update` = "Expected_update" ) %>% 
+    select(`MPO/RTPO`, `Pub. Date`, `Exp. Update`,  html_link)  
 
 mpo_df = read_xlsx("MPO_resource_table.xlsx") %>%
   remove_empty(c("cols", "rows")) %>%

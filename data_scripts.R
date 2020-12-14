@@ -17,7 +17,7 @@ map_intro =
 Then main body of this page contains the base map and the right sidebar contains US and Canadian census variable inputs.</p>
 <p style="text-align: left;">&nbsp;<strong>Base Map Information:</strong></p>
 <ul>
-<li style="text-align: left;">The default map displays a multitude of layers depicting jurisdictional boundaries and important transportation features located along corridor</li>
+<li style="text-align: left;">The default map displays a multitude of layers depicting jurisdictional boundaries and important transportation features located along the corridor</li>
 <li style="text-align: left;">The map contains layers for British Columbia, Washington, and Oregon</li>
 <li style="text-align: left;">The default displayed layers are Regional Planning and US and Canadian Census</li>
 <li style="text-align: left;">Layers can be hidden or displayed - see layer menu in map upper left corner</li>
@@ -26,7 +26,7 @@ Then main body of this page contains the base map and the right sidebar contains
 <ul>
 <li style="text-align: left;">Filter Census Data (by group) changes/limits the available Census Layer Color Metric options and which metrics are displayed in the census layer pop-ups</li>
 <li style="text-align: left;">Census Layer Color Metric is the actual input to change the map coloring scheme</li>
-<li style="text-align: left;">The census layer\'s will reflect this change and indicate what the shown metric is</li>
+<li style="text-align: left;">The census layers will reflect this change and indicate what the shown metric is</li>
 </ul>
 </ul>
 <p style="text-align: left;">&nbsp;<strong>Sidebar Information:</strong></p><ul>
@@ -38,7 +38,7 @@ Then main body of this page contains the base map and the right sidebar contains
 <li style="text-align: left;">These plots are dynamic:</li>
 <ul>
 <li style="text-align: left;">Users can see where a specific census tract is located on this distribution by clicking on the map</li>
-<li style="text-align: left;">Census tracts used by the subset plot are determined by the map window bounding box - user\'s can zoom into different corridor regions to see how the selected variable distribution of said area varies from that of the corridor</li>
+<li style="text-align: left;">Census tracts used by the subset plot are determined by the map window bounding box - users can zoom into different corridor regions to see how the selected variable distribution of said area varies from that of the corridor</li>
 </ul>
 </ul>' %>% 
   HTML()
@@ -47,52 +47,6 @@ Then main body of this page contains the base map and the right sidebar contains
 mpo_overview = "Purposes of MPOs: \nTransportation investment allocates scarce federal and other transportation funding resources\nPlanning needs to reflect the region's shared vision for its future; 
                                           \nAdequate transportation planning requires a comprehensive examination of the region's future and investment alternatives; and
 \nAn MPO acts as a Council of Governments; that is, it facilitates collaboration of governments, interested parties, and residents in the planning process."
-
-#intro_modal_front====
-# intro_modal_front = '<!DOCTYPE html>
-# <html>
-# <head>
-# <style>
-# body {color: #484848;}
-# h1 {color: #484848;}
-# h4 {color: #484848;}
-# </style>
-# </head>
-# 
-# <body>
-# <h1 style="text-align: center;">Cascadia UHSGT Corridor Planning Dashboard</h1>
-#   <h4 style="text-align: center;">An interactive, web-based tool to help explore and plan for the proposed UHSGT corridor.</h4>
-#     <hr />
-#     <p style="text-align: left;">The goal of this dashboard is to provide a high-level view of the entire corridor to aid and facilitate the planning of UHSGT in the Pacific Northwest.  
-#     The platform accomplishes this by displaying current transportation assets, political jurisdictions boundaries, and census data in an interactive map. 
-#     The map and dashboard were designed to be intuitive and user-friendly to </p>
-#       <hr />
-#       <p style="text-align: left;">&nbsp;<strong>What you can do with this dashboard:</strong></p>
-#       <ul>
-#       <li style="text-align: left;">Explore the Cascadia corridor given a variety of map layers relevant to UHSGT.&nbsp;</li>
-#       <li style="text-align: left;">Inspect aggregated census metrics for the corridor and by user defined by spatial subsets.&nbsp;</li>
-#       <li style="text-align: left;">Download data and metrics to share with colleagues offline.&nbsp;</li>
-#       <li style="text-align: left;">Understand important regional planning deadlines and publications.&nbsp;</li>
-#       </ul>
-#       <p style="text-align: left;">&nbsp;<strong>How to navigate this dashboard:</strong></p>
-#       <ul>
-#       <li style="text-align: left;">This dashboard has four main pages which can be navigated to using the left sidebar.</li>
-#       <li style="text-align: left;">The <strong>Base Map</strong> page contains the corridor map and its own sidebar for map filtering controls.</li>
-#       <li style="text-align: left;">The <strong>Filtered Map</strong> page contains mapping controls which allow the user to create their own geometry and apply it to the base map.</li>
-#       <ul>
-#       <li style="text-align: left;">This user-defined geometry can be used to filterable a corridor mini-map which returns aggregated census statistics which you can compare to the corridor aggregates.</li>
-#       </ul>
-#       <li style="text-align: left;">The <strong>Regional Planning</strong> page contains information regarding regional transportation planning organizations located in the US and Canada.</li>
-#       <li style="text-align: left;">The <strong>Data Center</strong> page contains all the data used to create the map and metrics tables.</li>
-#       <li style="text-align: left;">The <strong>Help Center</strong> tab contains help buttons the user can use if they are stuck or need more information</li>
-#       <ul>
-#       <li>The tables on this page contain direct links to the data sources so you may perform further investigation at your convenience.</li>
-#       </ul>
-#       </ul>
-      
-# </ul>
-# </body>
-# </html>'
 
 intro_modal_front = '
 <!DOCTYPE html>
@@ -109,7 +63,7 @@ h4 {color: #484848;}
 <h1 style="text-align: center;">Cascadia UHSGT Corridor Planning Dashboard</h1>
 <h4 style="text-align: center;">An interactive, web-based tool to help explore and plan for the proposed UHSGT corridor.</h4>
 <hr />
-<p style="text-align: left;">Welcome to the dashboard! The goal of this tool is to provide a high-level view of the entire corridor to aid and facilitate the planning of UHSGT in the Pacific Northwest.  
+<p style="text-align: left;">Welcome to the dashboard! The goal of this tool is to provide a high-level view of the entire corridor to aid and facilitate the planning of Ultra High-speed Ground Transporation (UHSGT) in the Pacific Northwest.  
 The platform accomplishes this by displaying current transportation assets, governance boundaries, and census data in an interactive map. </p>
 <hr />
 <p style="text-align: left;">&nbsp;<strong>What you can do with this dashboard:</strong></p>
@@ -121,17 +75,17 @@ The platform accomplishes this by displaying current transportation assets, gove
 </ul>
 <p style="text-align: left;">&nbsp;<strong>How to navigate this dashboard:</strong></p>
 <ul>
-<li style="text-align: left;">This dashboard has four main pages which can be navigated to using the left sidebar.</li>
-<li style="text-align: left;">The <strong>Base Map</strong> page contains the corridor map and its own sidebar for map filtering controls.</li>
-<li style="text-align: left;">The <strong>Filtered Map</strong> page contains mapping controls which allow the user to create their own geometry and apply it to the base map.</li>
+<li style="text-align: left;">This dashboard has four main pages which can be navigated to using the left sidebar</li>
+<li style="text-align: left;">The <strong>Base Map</strong> page contains the corridor map and its own sidebar for map filtering controls</li>
+<li style="text-align: left;">The <strong>Filtered Map</strong> page contains mapping controls which allow the user to create their own geometry and apply it to the base map</li>
 <ul>
-<li style="text-align: left;">This user-defined geometry can be used to filterable a corridor mini-map which returns aggregated census statistics which you can compare to the corridor aggregates.</li>
+<li style="text-align: left;">The user-defined geometry can be used to spatially filter the corridor and return aggregated census statistics</li>
 </ul>
 <li style="text-align: left;">The <strong>Regional Planning</strong> page contains information regarding regional transportation planning organizations located in the US and Canada.</li>
 <li style="text-align: left;">The <strong>Data Center</strong> page contains all the data used to create the map and metrics tables.</li>
 <li style="text-align: left;">The <strong>Help Center</strong> tab contains help buttons the user can use if they are stuck or need more information</li>
 <ul>
-<li>The tables on this page contain direct links to the data sources so you may perform further investigation at your convenience.</li>
+<li style="text-align: left;">The tables on this page contain direct links to the data sources so you may perform further investigation at your convenience.</li>
 </ul>
 </ul>
 </body>
@@ -156,14 +110,6 @@ body {color: #484848;=}
 </html>' %>% 
   HTML()
 
-# intro_modal_back = '
-# <p style="text-align: left;">&nbsp;<strong>Additional Info</strong></p>
-# <hr />
-# <p style="text-align: center;"><span style="color: #000000;">For additional information, please see the operational manual located at this <a href="https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.pdf">GIT repo location.</a></span></p>
-# <p style="text-align: center;"><span style="color: #000000;">For support, issue reporting, or for features you\'d like to see included in the next release - contact: michael.gaunt@wsp.com, your UHSGT corridor planning contact or visit the project\'s <a href="https://github.com/michaelgaunt404/uhsgt_dashboard">GIT repo</a></span></p>
-# <p style="text-align: center;"><strong><span style="color: #ff0000;">IMPORTANT: This is for internal use only - please check with your UHSGT corridor planning contact before sharing. </span></strong></p>
-# '
-
 map_edit_tab_info = 
 '<p style="text-align: left;">Filtered Map Page</p>
 <hr />
@@ -175,10 +121,10 @@ map_edit_tab_info =
 <ul>
 <li style="text-align: left;">The user defines a new geometry - polygons, lines, points, etc. - using the left toolbar on the left-hand map (see Spatially Filtered Maps tab)</li>
 <li style="text-align: left;">The user defines a buffer (default 1 mile) to be applied to their geometry (see top navbar) </li>
-<li style="text-align: left;">The user submits their selections and initiates the filtering and aggregation process by clicking the <strong>Filter Default Map</strong> button (see Navbar above)</li>
-<li style="text-align: left;">The user defined features and the resulting subset will be displayed on the right-hand map (see) </li>
+<li style="text-align: left;">The user submits their selections and initiates the filtering and aggregation process by clicking the <strong>Filter Default Map</strong> button (see top navbar)</li>
+<li style="text-align: left;">The user will be notified by a pop-up window that their selection was received</li>
 <li style="text-align: left;">US and Canadian Census metrics (corridor and subsets) are displayed on the metric plots, Metric Tabular Data, and Census tract Subset tabs</li>
-<li style="text-align: left;">The user has the option to download their geometry by pressing the <strong>Download User Geometry</strong> button (see Navbar above)</li>
+<li style="text-align: left;">The user has the option to download their geometry by pressing the <strong>Download User Geometry</strong> button (see top navbar)</li>
 </ul>
 
 <p style="text-align: left;">How to navigate this page:</strong></p>

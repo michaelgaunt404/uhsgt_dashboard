@@ -9,10 +9,6 @@
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# source("global.R")
-# source("./R/data_mapper.R")
-# source("./R/data_scripts.R")
-
 #package install and load~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(rgdal) #for inport/outport
@@ -27,6 +23,7 @@ library(tidyverse)
 library(lubridate)
 library(magrittr)
 library(skimr)
+library(textclean)
 
 library(readxl)
 library(janitor)
@@ -48,7 +45,7 @@ library(dashboardthemes)
 library(shinyalert)
 library(timevis)
 library(mapedit)
-
+library(brio)
 library(lwgeom)
 
 #global environement variables~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -199,7 +196,7 @@ simplify_shapefile = function(data, meters = 100){
 
 base_map_options = function(map){
   map %>%  
-    setView(-120.207, 46.223, zoom = 7) %>% 
+    setView(-120.5, 47, zoom = 7) %>% 
     addMeasure(
       position = "bottomright",
       activeColor = "#3D535D",
@@ -216,7 +213,6 @@ data_table_fromat = '"function(settings, json) {",
 "$(\'body\').css({\'font-family\': \'Calibri\'});",
 "}"'
 
-
 filter_sf <- function(.data, xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL) {
   bb <- sf::st_bbox(.data)
   if (!is.null(xmin)) bb["xmin"] <- xmin
@@ -226,4 +222,23 @@ filter_sf <- function(.data, xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL)
   sf::st_filter(.data, sf::st_as_sfc(bb), .predicate = sf::st_within)
 }
 
+leaflet_popup_maker = function(data, list){
+  tmp = colnames(data)
+  tmp = tmp[which((tmp %in% list) == F)]
+  data = data %>%  
+    mutate(label = str_c(tmp %>%  
+                           str_to_title() %>%
+                           paste('<strong>', ., "</strong>"),
+                         tmp %>%
+                           paste0("{\`", ., "\`}"), sep = ": ") %>%  
+             paste0(collapse = "</br>") %>%  
+             str_glue() %>% 
+             paste0("<div class='leaflet-popup-scrolled' style='max-width:600px;max-height:200px'>",
+                    .,
+                    "</div>"))
+}
 
+#sourcing helper functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source("data_scripts.R")
+source("data_mapper.R")
