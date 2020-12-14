@@ -24,12 +24,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Overview 
-This document serves as a guide to the UHSGT dashboard back-end . This guide is not intended to teach how to use R but to describe the main components, files, directories, update methods, and deployment startegies regarding the application
+This document serves as a guide to the UHSGT dashboard back-end . This guide is not intended to teach how to use R but to describe the main components, files, directories, update methods, and deployment strategies regarding the application
 
 The UHSGT dashboard was made using the R language and Shiny dashboard framework. Both R and Shiny require specific domain knowledge to implement; however, this application was built in a way to minimize 
 
 # Files and Directories 
-Please see the below image that details the dashboards files. The ensuing bulleted list describes the items and folders as seen in the image.     
+Please see the below image that details the dashboards files. The ensuing bullet list describes the items and folders as seen in the image.     
 
 ![](./docs/file_structure.png)
 
@@ -39,9 +39,9 @@ Please see the below image that details the dashboards files. The ensuing bullet
     + global.R 
       + Initializes the R environment
       + Loads the required packages
-        + If you are doing any maintenace on the application or redeploying the application you will need to make sure all of these libraries are installed on you machine and loaded for your session
+        + If you are doing any maintenance on the application or redeploying the application you will need to make sure all of these libraries are installed on you machine and loaded for your session
       + Loads custom functions needed for the application
-      + It calls two files at the end of the script after intialising the environment – data_mapper.R and data_scripts.R 
+      + It calls two files at the end of the script after initializing the environment – data_mapper.R and data_scripts.R 
         + data_mapper.R processes/preps the data when the application starts and data_scripts.R contains static stings that are called by the application modals and information buttons
     + ui.r 
       + This is the R script that contains the UI logic for the application 
@@ -58,7 +58,7 @@ Please see the below image that details the dashboards files. The ensuing bullet
     + General: These spreadsheets are used to build certain objects that are needed to run the application
     + data_source_list.xlsx
       + This spreadsheet defines all data layers and map processing operations that are performed when the application is ran
-      + Augementing this spreadsheet will create data new or edit exsiting data layers 
+      + Augmenting this spreadsheet will create data new or edit existing data layers 
       + This sheet is called by the data processing scripts (the scripts located in the *handlers* folder) and the application scripts (data_mapper.R and data_scripts.R )
     + MPO_resource_table.xlsx
       + Contains all the information for US MPOs and Vancouver Metro 
@@ -73,7 +73,7 @@ Please see the below image that details the dashboards files. The ensuing bullet
       + This data was gathered by hand 
       + This sheet is called by the data processing scripts (the scripts located in the *handlers* folder)
 *	Root Level Maintenance-Manual.* and Operation_Manual.* Files 
-    + The .Rmd files are the editable manuals that create word documents when knited
+    + The .Rmd files are the editable manuals that create word documents when knitted
       + Is is a Markdown language that can also contain executable R code
       + Please see this site for any additional information: https://rmarkdown.rstudio.com/
 
@@ -89,7 +89,7 @@ Please see the below image that details the dashboards files. The ensuing bullet
     + Contains a singular shapefile that is used to buffer the raw shape-files that are contained in shapefiles_raw_cache 
     + The buffer was created manually by tracing I5 from Eugene, OR to Vancouver, BC.
 * docs folder 
-    + Contains auxillary files 
+    + Contains auxiliary files 
     + The application does not use anything in this folder to build or run the application
 *	handlers folder 
     + General: Contains R scripts used to obtain or process raw shape-files and to prepare them for the application - they are not directly called by the application
@@ -99,10 +99,10 @@ Please see the below image that details the dashboards files. The ensuing bullet
       + This script uses data_source_list.xlsx to define the queries 
       + The US data query information comes from the “tidycensus” tab 
         + Information regarding this package (tidycensus) and the API can be found here: https://github.com/walkerke/tidycensus
-        + You will need an API key to run or perfrom any development of your own
+        + You will need an API key to run or perform any development of your own
       + The CA data query information comes from the “ca_census” tab
         + Information regarding this package (tidycensus) and the API can be found here: https://cran.r-project.org/web/packages/cancensus/vignettes/cancensus.html
-        + You will need an API key to run or perfrom any development of your own
+        + You will need an API key to run or perform any development of your own
     + data_process_raw.R
       + Uses the information contained in data_source_list.xlsx to process shape-files located in shapefiles_raw_cache
       + Primarily buffers the raw shape-files and removes unneeded data attributes
@@ -134,24 +134,24 @@ Please see the below image that details the dashboards files. The ensuing bullet
     + data_process_raw.R uses the information contained in data_source_list.xlsx to pull data from this location and perform the initial processing
     + The excel spreadsheet data_source_list.xlsx defines which shape-files are taken from this folder and processed
     + This folder is specific to the data processing process executed by the developer (mike.gaunt.404@gmail.com)
-      + You will likely never have to perfrom the data processing process that queries data from this folder
+      + You will likely never have to perform the data processing process that queries data from this folder
 *	www folder 
     + This is a standard folder that is used to hold images, css, or java script files that will be used by the shiny application
     + This folder currently contains images and html scripts used by the application 
 
-# Application Build Processe
-Please see the below image that details the dashboards build process. This image provides a high-level overview of the overall process flow used to build the application, the sub-processes, and the connections between scriptes and data folders. 
+# Application Build Process
+Please see the below image that details the dashboards build process. This image provides a high-level overview of the overall process flow used to build the application, the sub-processes, and the connections between scripts and data folders. 
 ![](./docs/application_build_process.PNG)    
 
-## data_source_list.xlsx Descritpion
+## data_source_list.xlsx Description
 *	General Notes:  
     + There are two major processes that make up the current application build process - they are the *data processing* and *application build* processes
       + The former is the process that takes raw shape-files and processes them to be included into the application 
       + The latter takes the processed shape-files (deemed *map ready*) and uses them to build the application along with the server and UI logic
-    + An additional process has been included in this image to repersent potential future data layer addtions to the map
+    + An additional process has been included in this image to represent potential future data layer additions to the map
       + The data processing process shown above is specific to the the files located in *shapefiles_raw_cache* and their particular data cleaning needs
       + Data should be processed using other software or a new r script and then placed in the map_ready folder
-    + data_source_list.xlsx is the major driver for many of the data processing processes and is queied by many of the scripts that both process the data and that build the application 
+    + data_source_list.xlsx is the major driver for many of the data processing processes and is queued by many of the scripts that both process the data and that build the application 
       + The format for each spreadsheet and the cell values are very important
         + The contents of the cell values will trigger different processes throughout the code 
         
@@ -162,37 +162,37 @@ Please see the below image that details the dashboards build process. This image
       + Each row is a different census variable query 
       + There a many columns that record different types of meta-data for each census variable (row)
         + The columns with the green accented headers are the only meta-data that is required to obtain and build the shapefiles, they are:
-          + boundary: tells the API at what geograogic level to obtain the data at
+          + boundary: tells the API at what geographic level to obtain the data at
           + variable: unique ID for each census variable
           + var_name: a unique name to call the variable other than it's ID
-          + name: the category that the vairbale falls under 
+          + name: the category that the hairball falls under 
           + processed_name: the name of the folder that the shape-file will be written, the layers' names, and the base map layer name it will have in the map
             + Variables with the same processed_name will be grouped into the same shape-file
-          + notes: addtitional information that is associated with a particular layer
+          + notes: additional information that is associated with a particular layer
           + group: a variable used for indexing in the code, should either be Political or Census (case sensitive)
           + src_url: indicates the source for the data, this items in this spreadsheet should point to the same *tidycensus* source
           + selection: contains a string of the raw column names that are written when the shape-file is first written to *application_shapefiles*
             + The esri format has a limit on column name lengths and these column names are a result process
-            + The string needs to contain all the column names included in tha shapefile
+            + The string needs to contain all the column names included in the shapefile
           + selected_new: A string of the corrected *selection* names that are human readable
           
 ![](./docs/data_source_list_us.PNG){width=150%}
 
 * 
     + ca_census tab
-      + This spreadsheet is very similar to the tidycenus spreadsheet with some minor execpti
+      + This spreadsheet is very similar to the tidycenus spreadsheet with some minor executive
       + You will only need to make changes to this spreadsheet if you want to include/exclude more/less variables in the CA census map layer
       + Each row is a different census variable query 
       + There a many columns that record different types of meta-data for each census variable (row)
         + The columns with the green accented headers are the only meta-data that is required to obtain and build the shapefiles, they are:
           + variable: unique ID for each census variable
           + var_name: a unique name to call the variable other than it's ID - based on the actual name of the variable provided for by the 
-          + name: the category that the vairbale falls under 
+          + name: the category that the variable falls under 
           + processed_name: the name of the folder that the shape-file will be written, the layers' names, and the base map layer name it will have in the map
             + Variables with the same processed_name will be grouped into the same shape-file
           + selection: contains a string of the raw column names that are written when the shape-file is first written to *application_shapefiles*
             + The esri format has a limit on column name lengths and these column names are a result process
-            + The string needs to contain all the column names included in tha shapefile
+            + The string needs to contain all the column names included in the shapefile
           + selected_new: A string of the corrected *selection* names that are human readable
           
 ![](./docs/data_source_list_ca.PNG){width=150%}
@@ -202,19 +202,19 @@ Please see the below image that details the dashboards build process. This image
       + This sheet differs from the ones above - it is only used to process data that has already been obtained and is not used to acquire new data
       + This data is used in two ways - to determine which shape-files to process and how to process them and how to process them (name changes, etc)
       + Each row is a singular shape-file that could be included in the final application
-      + Each column is a unique attibute given a shape-file or a trigger for a process to be ran during the data processing or application building process
+      + Each column is a unique attribute given a shape-file or a trigger for a process to be ran during the data processing or application building process
       + Trigger Columns:
         + to_application_shp
-          + Indicates (Y) weather a shapefile should be initally processed (spatially filtered and unneeded columns removed)
+          + Indicates (Y) weather a shapefile should be initially processed (spatially filtered and unneeded columns removed)
           + These shape-files are taken from *shapefiles_raw_cache* to *application_shapefiles*
-          + Only relevant if you are rerunning the developers processing worklfow
+          + Only relevant if you are rerunning the developers processing workflow
         + to_map_ready
           + Indicates (Y) weather a shapefile should be fully processed and ready to be seen in and that it should be included in the application
-          + These shape-files either will undergo manual (actually automated code written specificlaly for different shape-files) processing, be merged with other shaep-files, and/or not be processed at all
+          + These shape-files either will undergo manual (actually automated code written specifically for different shape-files) processing, be merged with other shape-files, and/or not be processed at all
           + This column is relevant for all shape-files that are intended to be seen in the application
         + to_application_shp/to_map_ready combinations and what they mean
           + Y/Y is a file that is in *shapefiles_raw_cache*, processed by *data_process_raw.R*, put into *application_shapefiles*, processed by *data_process_map_ready.R*, put into *map_ready*, and will be in the application
-          + N/Y is a file that does not undergo inital processing but will be used in the application
+          + N/Y is a file that does not undergo initial processing but will be used in the application
             + Examples: Shape-files that were manually created (either by merging or from excel data) via *data_process_map_ready.R*, any shape-file that doesn't need to be processed from it's raw form via the current workflow
           + Y/N is a file that can be processed via the developers workflow but was decided not to be used for the application
           + N/N is a file that will not be processed and will not be in the application
@@ -224,21 +224,21 @@ Please see the below image that details the dashboards build process. This image
             + These files **MUST** be shape-files and must have the same name for the layers as the folder it is in
             + E.g. path = "./folder_name/layer_name.shp" where (folder_name == layer_name)
           + group: a variable used for indexing in the code, should either be Political, Transportation, or Landmarks (case sensitive)
-          + dl_date: depricated
+          + dl_date: deprecated
           + selection: contains a string of the raw column names that are written when the shape-file is first written to *application_shapefiles*
             + Note: esri format has a limit on column name lengths and these column names are a result process
-            + The string needs to contain all the column names included in tha shape-file
+            + The string needs to contain all the column names included in the shape-file
           + zcol: the variable (human-readable form of column, should be in selected_new column) that should be used for layer coloring
             * *plain* is used to indicate no coloring 
           + selected_new: A string of the corrected *selection* names that are human readable - should be the same length as *selection* column strings
-          + notes: addtitional information that is associated with a particular layer
+          + notes: additional information that is associated with a particular layer
           + src_url: indicates the source for the data - *NA* if there is no source or if was made manually
           
 ![](./docs/data_source_list_manual.PNG){width=150%}
           
       
 ## Example: Adding Data
-This is a breif overview of how data would be added to the map.
+This is a brief overview of how data would be added to the map.
 
 Example Data:   
 Assumption - the shape-file was manually constructed from an excel table   
@@ -247,7 +247,7 @@ Assumption - the data has already been processed (spatially filtered for relevan
 Assumption - the .shp files are contained in a folder named - *UHSR_Stations (studied)*   
 Assumption - the .shp files are in a folder named - *UHSR_Stations (studied)*  
 Assumption - the .shp files are named - *UHSR_Stations (studied)*   
-Assumption - the data has the attibutes "City, StationLoc, Status, State"    
+Assumption - the data has the attributes "City, StationLoc, Status, State"    
 Assumption - the data attributes should be displayed in the application as  "City, Location, Status, State"   
     
 Steps to add data:
@@ -255,18 +255,18 @@ Steps to add data:
 1) Place folder containing .shp files in *map_ready* folder
 2) Open data_source_list.xlsx
 3) Begin new entry on manual tab
-4) Input "N" in *to_application_shp* column since the data has been preocessed already 
+4) Input "N" in *to_application_shp* column since the data has been processed already 
 5) Input "Y" in *to_map_ready* column since the will be used in the application
 6) Input "NA" in *raw_name* and *raw_layer_name* columns because it is not being processed as a raw file
-7) Input "UHSR_Stations (studied)" in *processed_name* column becuase it's folder and layer names are that
-8) Input "Transporation" in the *group* column since the layer is relevant to transportation
+7) Input "UHSR_Stations (studied)" in *processed_name* column because it's folder and layer names are that
+8) Input "Transpiration" in the *group* column since the layer is relevant to transportation
 9) Input "NA" in the *dl_date* column
 10) Input "City, StationLoc, Status, State" in the *selection* column - the script that builds the application will look to make sure that it selects/inputs the specified columns so this column string must be accurate to what is in the .shp files
 11) Input "plain" in the *zcol* column if you do not want to display distinct colors for the shape-files
-    + Alternatively, the features could be colored by "status" indicating if have just been studied or if they are apart of exisiting infrastrucure
-12) Input notes that provide ample infomation to the user regarding this layer
+    + Alternatively, the features could be colored by "status" indicating if have just been studied or if they are apart of existing infrastructure
+12) Input notes that provide ample information to the user regarding this layer
 13) Input "NA" for *src_url* column since the data was made manually and does not have a direct source link
-14) Run the *data_mapper.R* to check weather the map is included in the applicaiton objects
+14) Run the *data_mapper.R* to check weather the map is included in the application objects
     + Note: Make sure packages are loaded (run *global.R*)
     + Note: Make sure the working directory is set to root 
     
@@ -278,23 +278,23 @@ Steps to add data:
     + For dev set working directory to root 
     
 ## Locally Viewing the Application
-The application can be ran locally either in an R window or in a local host via a browser. This can be done by running either the *global.R*, *ui.R*, or *server.R* scripts. It doesn't matter which one you run since R runs all three of these scripts as a "team" with the execution of one of them - "global.R" will always run which will define the environemnt and the call the *data_mapper.R* and *data_scripts.R* files.
+The application can be ran locally either in an R window or in a local host via a browser. This can be done by running either the *global.R*, *ui.R*, or *server.R* scripts. It doesn't matter which one you run since R runs all three of these scripts as a "team" with the execution of one of them - "global.R" will always run which will define the environment and the call the *data_mapper.R* and *data_scripts.R* files.
 
 ## Redeploying the Application
 Note: the process below assumes the application is deployed on shinyapps.io (https://www.shinyapps.io/)
 
-After changes have been made to the application and it is stable, the application can be redeployed to the hosting service. Once the applciation is redployed, users will have access to the changes that were made since the last deployment. Before the application is deployed, the R environemnt needs to be cleaned - remove all variables that are in the environemnt and detach all packages that are currently loaded. To do this, close R and do not save any the environment or the .RData file, this ensures that no hidden dependcies are in the global environemnt the next time R is opened. Once closed, reopen R and run either the either the *global.R*, *ui.R*, or *server.R* scripts to run the application locally. Following this process ensures that application are capable of building the application and does not depend on any variables that had been created during earlier development. Once the application is running, the app can be pushed to the shinyapps.io. 
+After changes have been made to the application and it is stable, the application can be redeployed to the hosting service. Once the application is redeployed, users will have access to the changes that were made since the last deployment. Before the application is deployed, the R environment needs to be cleaned - remove all variables that are in the environment and detach all packages that are currently loaded. To do this, close R and do not save any the environment or the .RData file, this ensures that no hidden dependencies are in the global environment the next time R is opened. Once closed, reopen R and run either the either the *global.R*, *ui.R*, or *server.R* scripts to run the application locally. Following this process ensures that application are capable of building the application and does not depend on any variables that had been created during earlier development. Once the application is running, the app can be pushed to the shinyapps.io. 
 
 ![](./docs/shiny_deploy.PNG)
 
-Click on the "blue circular icon" to the right of the "run-app" button on the navbar (seen in picture above). A pop-up window will appear, indicating which account the applicaiton will be pushed to, which project the application will be pushed to/update, and a list of items to publish. Only the items that are required to build the application need to be pushed, these items are as follows:
+Click on the "blue circular icon" to the right of the "run-app" button on the navbar (seen in picture above). A pop-up window will appear, indicating which account the application will be pushed to, which project the application will be pushed to/update, and a list of items to publish. Only the items that are required to build the application need to be pushed, these items are as follows:
 
 * global.R
 * ui.R
 * server.R
 * data_mapper.R
 * data_scripts.R
-* corrdior_buffer items
+* corridor_buffer items
 * map_ready items
 * mapedit_tmp items
 * www items

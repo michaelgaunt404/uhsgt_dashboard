@@ -2,6 +2,9 @@
 server <- function(input, output) {
   #SECTION: Utility Setup======================================================================
   
+  last_layer_us = "remove_layer_name_dummy"
+  last_layer_ca = "remove_layer_name_dummy"
+  
   #timer for mapedit ping
   autoInvalidate <- reactiveTimer(2000)
   
@@ -293,23 +296,23 @@ server <- function(input, output) {
   })
   
   #map_object creation====
-  # census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
+  # census_map_data = which(map_ready$processed_name %in% "US_Census") %>%
   #   map_files_dfs[[.]]
-  
+
   # {
-  #   
   # 
-  #   # leaflet() %>% 
-  #   #   addTiles() %>% 
-  #   #   addPolygons(data = bobo, 
-  #   #               # color = ~pal(tmp),
-  #   #               popup = ~label, 
-  #   #               group = "census") %>% 
-  #   #   addLayersControl(
-  #   #     position = "topleft",
-  #   #     baseGroups = c('CartoDB.Positron', 'CartoDB.DarkMatter', 'OpenStreetMap', 'Esri.WorldImagery', "OpenTopoMap"),
-  #   #     overlayGroups = c("heads", "tails", "census"))
-  #   
+  # 
+  #   leaflet() %>%
+  #     addTiles() %>%
+  #     addPolygons(data = bobo,
+  #                 # color = ~pal(tmp),
+  #                 popup = ~label,
+  #                 group = "census") %>%
+  #     addLayersControl(
+  #       position = "topleft",
+  #       baseGroups = c('CartoDB.Positron', 'CartoDB.DarkMatter', 'OpenStreetMap', 'Esri.WorldImagery', "OpenTopoMap"),
+  #       overlayGroups = c("heads", "tails", "census"))
+  # 
   # }
   
   # ca_census_map_data = which(map_ready$processed_name %in% "US_Census") %>% 
@@ -369,6 +372,8 @@ server <- function(input, output) {
     
     leafletProxy("full_map") %>%
       clearControls() %>%
+      clearGroup(., last_layer_us) %>% 
+      clearGroup(., last_layer_ca) %>% 
       addPolygons(data = notshared_census_lfpopup, fillColor = ~pal(tmp_us_index),
                   color = "black",
                   opacity = 1,
@@ -397,6 +402,8 @@ server <- function(input, output) {
                                 map_ready$processed_name[-c(tmp_ca, tmp_us)] %>%  
                                   str_replace_all("_", " ")) %>% 
                 str_sort())
+    last_layer_us <<- paste0("US Census: ", input$census_color)
+    last_layer_ca <<- paste0("CA Census: ", input$census_color_ca)
   })
 
   #makes mapedit map
@@ -518,13 +525,11 @@ server <- function(input, output) {
                    sd = sd(value, na.rm = T)), by = .(variable, type, var_type)] %>%
               pivot_longer(cols = !c(variable, type, var_type)) %>%
               pivot_wider(names_from = type, values_from = value) %>%
-              mutate(Error = 100*(Subset-Corridor)/Corridor,
+              mutate(Error = (100*(Subset-Corridor)/Corridor) %>%  
+                       round(2),
                      variable = fct_relevel(variable, 
                                             census_selection_index[name != "All", var_name]),
-                     text = str_glue("{variable} 
-                                     \n Corridor: {round(Corridor,2)} 
-                                     \n Subset: {round(Subset, 2)}
-                                     \n Deviation: {round(Error, 2)}%")) %>% 
+                     text = str_glue("{variable} \n Corridor: {round(Corridor, 2)} \n Subset: {round(Subset, 2)} \n Deviation: {round(Error, 2)}%")) %>% 
               arrange(variable) %>%  
               mutate(names_smll = variable %>%  
                        gsub("\\(.*","\\1", .) %>%  
@@ -575,11 +580,12 @@ server <- function(input, output) {
           })
          
           output$leaflet_map_edit =  renderLeaflet({
-            tmp = which(map_ready$processed_name %in% "US_Census")
+            # tmp = which(map_ready$processed_name %in% "US_Census")
             data = map_files_dfs
             map_ready_fltrd = map_ready
-            data[[tmp]] = census_map_data
-            map_ready_fltrd[tmp, "zcol"] = census_map_data_zcol
+            # data[[tmp]] = notshared_census
+            # data[[tmp]] = census_map_data
+            # map_ready_fltrd[tmp, "zcol"] = census_map_data_zcol
             map_files_dfs_fltrd = data %>%
               map(st_filter, tmp_buffer)
 
@@ -590,9 +596,16 @@ server <- function(input, output) {
               data.table(empty_list = .) %>%
               .[,`:=`(rwnms = rownames(.) %>%  as.numeric())] %>%
               .[which(empty_list == 0),rwnms]
-
-            map_files_dfs_fltrd = map_files_dfs_fltrd[-index_bffr_fltrd_map]
-            map_ready_fltrd = map_ready_fltrd[-index_bffr_fltrd_map,]
+            
+            if (is_empty(index_bffr_fltrd_map)) {
+              map_files_dfs_fltrd = map_files_dfs_fltrd
+              map_ready_fltrd = map_ready_fltrd
+              
+            } else {
+              map_files_dfs_fltrd = map_files_dfs_fltrd[-index_bffr_fltrd_map]
+              map_ready_fltrd = map_ready_fltrd[-index_bffr_fltrd_map,]
+              
+            }
 
             map_edit_maps = list(map_files_dfs_fltrd,
                                  map_ready_fltrd$zcol %>%  str_to_title(),
@@ -709,10 +722,7 @@ server <- function(input, output) {
               mutate(Error = 100*(Subset-Corridor)/Corridor,
                      variable = fct_relevel(variable,
                                             ca_census_selection_index[name != "All", var_name]),
-                     text = str_glue("{variable}
-                                     \n Corridor: {round(Corridor,2)}
-                                     \n Subset: {round(Subset, 2)}
-                                     \n Deviation: {round(Error, 2)}%")) %>%
+                     text = str_glue("{variable} \n Corridor: {round(Corridor, 2)} \n Subset: {round(Subset, 2)} \n Deviation: {round(Error, 2)}%")) %>% 
               arrange(variable) %>%
               mutate(names_smll = variable %>%
                        gsub("\\(.*","\\1", .) %>%
@@ -839,6 +849,7 @@ server <- function(input, output) {
         escape = F,
         selection = "single",
         options = list( 
+          scrollY = T,
           pageLength = 20,
           initComplete = JS(
             "function(settings, json) {",
@@ -862,10 +873,10 @@ server <- function(input, output) {
   
   #mpo_timeline_plot=====
   output$mpo_plot_timeline = renderTimevis({
-    mpo_timeline = mpo_df %>%
+    mpo_timeline = mpo_df_alt %>%
       mutate(id = as.numeric(rownames(.)), 
              end = NA, 
-             Date = Date + months(48),
+             Date = Date + months(as.numeric(mpo_df_alt$Update_time)*12),
              qtr = Date %>%  floor_date("quarter"),
              group = Type,
              start = Date,
@@ -884,7 +895,7 @@ server <- function(input, output) {
       data.frame(id = ., 
                  content = .)
     mpo_timeline %>%
-      timevis(., groups, height = 500)
+      timevis(., groups, height = 600)
   })
 
   output$layer_select <- renderUI({

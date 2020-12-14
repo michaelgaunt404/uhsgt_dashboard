@@ -26,7 +26,7 @@ ui = dashboardPagePlus(
                                          # menuItem("Census Metrics", tabName = "metrics", icon = icon("calculator")),
                                          menuItem("Regional Planning", tabName = "mpo", icon = icon("calculator")),
                                          menuItem("Data Center", tabName = "data_center", icon = icon("table")),
-                                         menuItem("Help Center", tabName = "help_center", icon = icon("table"),
+                                         menuItem("Help Center", tabName = "help_center", icon = icon("life-ring"),
                                                   actionButton(inputId = "into_button", label = "Show Intro Msg",
                                                              icon("info")
                                                   ),

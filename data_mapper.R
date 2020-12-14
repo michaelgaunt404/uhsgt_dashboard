@@ -91,7 +91,7 @@ map_ready = list.files("map_ready") %>%
                         str_glue('<a href="#" onclick="alert(\'{notes}\');">Click for Description</a>'),
                         notes),
          src_url = ifelse(!is.na(src_url), 
-                          str_glue('<a href="{src_url}">Link to data source</a>'),
+                          str_glue('<a href="{src_url}" target="_blank">Link to data source</a>'),
                           src_url)) %>%  
   unique() 
 
