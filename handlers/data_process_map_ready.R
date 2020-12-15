@@ -240,9 +240,10 @@ tmp_file = read_xlsx("MPO_resource_table.xlsx") %>%
   filter(!is.na(Key)) %>%
   mutate(`Pub. Date` = as.character(Date) %>%
            na_if("NA") %>%  
-           convert_to_date(),
-         `Exp. Update Year` = (`Pub. Date`+months(12*as.numeric(Update_time))) %>% 
-           format(.,"%Y"),
+           convert_to_date() %>% 
+           format(.,"%Y-%m"),
+         # `Exp. Update Year` = (`Pub. Date`+months(12*as.numeric(Update_time))) %>% 
+           # format(.,"%Y"),
          Web = paste0('<a href = "', Web, '"> Link to website </a>'),
          Pub_Web = paste0('<a href = "', Pub_Web, '"> ', Publication, ' </a>')) %>%
   filter(Include == "T") %>%
@@ -250,7 +251,8 @@ tmp_file = read_xlsx("MPO_resource_table.xlsx") %>%
   pivot_wider(names_from = "Type",
               # id_cols = c("Key", "Acronym", "Web"),
               values_from = c("Pub_Web", "Pub. Date")) %>%
-  rename_all(~ str_remove(., "Pub_Web_"))
+  rename_all(~ str_remove(., "Pub_Web_")) %>%  
+  select(!contains("TIP")) 
 
 tmp_index = which(processed_shape_files$processed_name == "WA_MPO-RTPO")
 tmp_index_1 = which(processed_shape_files$processed_name == "OR_MPO-RTPO")
@@ -279,7 +281,7 @@ merged_mpos = half_polished[tmp_index][[1]] %>%
          Area = st_area(.) %>%
            units::set_units(mile^2)) %>%  
   rename(`Data Source` = "data_source") %>%
-  select(name, Web, TIP, RTP, CEDS, `Pub. Date_TIP`, `Pub. Date_RTP`, `Pub. Date_CEDS`, Area, `Data Source`, geometry)
+  select(name, Web, RTP, CEDS, `Pub. Date_RTP`, `Pub. Date_CEDS`, Area, `Data Source`, geometry)
 
 # merged_mpos = st_join(merged_mpos, tmp_pop) %>%
 #     group_by(name) %>%

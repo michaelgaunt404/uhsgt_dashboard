@@ -246,13 +246,15 @@ ui = dashboardPagePlus(
                                boxPlus(closable = F, collapsible = T, collapsed = T, 
                                        width = "100%", solidHeader = T, status = "primary",
                                        title = "RTP Update Schedule",
-                                       dataTableOutput("mpo_df_alt_soonest_10") %>%  withSpinner()),
-                               boxPlus(collapsed = T, title = "Tracked Documents", 
-                                       closable = FALSE, status = "primary", 
-                                       solidHeader = T, collapsible = TRUE,
-                                       width = "100%",
-                                       plotOutput("mpo_plot_status", width = "100%", height = 300) %>%  
-                                         withSpinner())
+                                       dataTableOutput("mpo_df_alt_soonest_10") %>%  withSpinner())
+                               # ,
+                               # boxPlus(collapsed = T, title = "Tracked Documents", 
+                               #         closable = FALSE, status = "primary", 
+                               #         solidHeader = T, collapsible = TRUE,
+                               #         width = "100%",
+                               #         plotOutput("mpo_plot_status", width = "100%", height = 300) %>%  
+                               #           withSpinner()
+                               # )
                        )
                 ),
                 column(width = 8,

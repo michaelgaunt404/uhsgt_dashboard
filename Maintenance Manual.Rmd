@@ -1,8 +1,16 @@
 ---
-title: "![](./www/flatart_long.jpg){width=9in}"
-author: "Michael Gaunt mike.gaunt@wsp.com"
-date: '2020-11-11'
+title: "![](./www/flatart_long.jpg){width=9in} Maintenance Manual"
+author: 
+  - "Current Operator and Maintainer: XXXX - contact@site.com"
+  - "Original Developer: Michael Gaunt - mike.gaunt@wsp.com"
+date: '2020-12-15'
 output:
+  word_document:
+    toc: yes
+    toc_depth: '2'
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
   html_document:
     number_sections: yes
     theme: cerulean
@@ -11,12 +19,6 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: no
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
-  word_document:
-    toc: yes
-    toc_depth: '2'
 ---
 
 ```{r setup, include=FALSE}

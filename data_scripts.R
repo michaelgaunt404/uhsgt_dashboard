@@ -40,7 +40,8 @@ Then main body of this page contains the base map and the right sidebar contains
 <li style="text-align: left;">Users can see where a specific census tract is located on this distribution by clicking on the map</li>
 <li style="text-align: left;">Census tracts used by the subset plot are determined by the map window bounding box - users can zoom into different corridor regions to see how the selected variable distribution of said area varies from that of the corridor</li>
 </ul>
-</ul>' %>% 
+</ul>
+<p style="text-align: left;">&nbsp;<strong>Final Note:</strong> Clicking on html links in map pop-ups or tables will exit out of the dashboard - to open a new window with the html use <strong>right click -> "open new window"</strong></p><ul>' %>% 
   HTML()
 
 #mpo_overview====

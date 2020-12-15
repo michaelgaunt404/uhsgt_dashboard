@@ -87,12 +87,15 @@ map_ready = list.files("map_ready") %>%
                    by = "processed_name", all.x = T) %>% 
   na_if("NA") %>% 
   .[is.na(zcol), `:=`(zcol = "plain")] %>% 
+  mutate(notes = str_remove_all(notes, "'") #%>%  
+           # str_replace_all(notes, "\\\r\\\n\\\r\\\n")
+           ) %>%
   mutate(notes = ifelse(!is.na(notes), 
                         str_glue('<a href="#" onclick="alert(\'{notes}\');">Click for Description</a>'),
-                        notes),
+                        "No Data"),
          src_url = ifelse(!is.na(src_url), 
-                          str_glue('<a href="{src_url}" target="_blank">Link to data source</a>'),
-                          src_url)) %>%  
+                          str_glue('<a href="{src_url}" target="popup" onclick="window.open("{src_url}","name","width=600,height=400")">Link to data source</a>'),
+                          "No Data")) %>%  
   unique() 
 
 #extracts all the shapefiles and performs mapping operation 
@@ -221,6 +224,7 @@ mpo_census_merge_df = mpo_census_merge %>%
 
 mpo_df_alt = read_xlsx("MPO_resource_table.xlsx") %>%  
   remove_empty(c("cols", "rows")) %>%  
+  filter(Type != "TIP") %>% 
   na_if("NA") %>% 
   na_if("-") %>% 
   mutate(Date = convert_to_date(Date), 
@@ -234,18 +238,7 @@ mpo_df_alt = read_xlsx("MPO_resource_table.xlsx") %>%
 
 mpo_df_alt_soonest_10 = mpo_df_alt %>% 
   filter(Type == "RTP") %>%  
-  # filter(Type != "TIP") %>% 
-  # filter(!is.na(Type)) %>% 
-  # # mutate(#months_to_next = ifelse(Type == "Tip", 12, 48),
-  #        #Date = Date+months(months_to_next),
-  #        # Status = ifelse(Date>Sys.Date(), "Upcoming", "Past")
-  #        # ,
-  #        # `Days Until` = Date - Sys.Date()
-  #        # ) %>%
-  # filter(Expected_update > Sys.Date()) %>%
   arrange(Expected_update) %>%  
-  # select(-Status) %>%  
-  # head(10) %>% 
   mutate(Date = Date %>% 
            format(.,"%Y-%m")) %>% 
   rename(`MPO/RTPO` = "Acronym", 
@@ -253,15 +246,16 @@ mpo_df_alt_soonest_10 = mpo_df_alt %>%
          `Exp. Update` = "Expected_update" ) %>% 
     select(`MPO/RTPO`, `Pub. Date`, `Exp. Update`,  html_link)  
 
-mpo_df = read_xlsx("MPO_resource_table.xlsx") %>%
-  remove_empty(c("cols", "rows")) %>%
-  na_if("NA") %>%
-  mutate(Date = convert_to_date(Date),
-         Name = paste0(Key, " (", Acronym, ")")) %>%
-  merge(., data.frame(mpo_spatial) , by = "Name") %>%
-  rename(#`Population Estimate` = Population.Estimate,
-         `Area (mi^2)` = Area...Mi.2.) %>%
-  mutate(`Area (mi^2)` = round(`Area (mi^2)`,0),
-         `Document\nStatus:` = ifelse(is.na(Date), "Missing", "Obtained"))
+# mpo_df = read_xlsx("MPO_resource_table.xlsx") %>%
+#   remove_empty(c("cols", "rows")) %>%
+#   na_if("NA") %>%
+#   mutate(Date = convert_to_date(Date),
+#          Name = paste0(Key, " (", Acronym, ")")) %>%
+#   merge(., data.frame(mpo_spatial) , by = "Name") %>%
+#   rename(#`Population Estimate` = Population.Estimate,
+#          `Area (mi^2)` = Area...Mi.2.) %>%
+#   mutate(`Area (mi^2)` = round(`Area (mi^2)`,0),
+#          `Document\nStatus:` = ifelse(is.na(Date), "Missing", "Obtained")) %>% 
+#   filter(Type != "LRP") 
 
 print("END")

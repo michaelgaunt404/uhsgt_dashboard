@@ -845,6 +845,8 @@ server <- function(input, output) {
   #mpo_upcoming_publish_table=====
   output$mpo_df_alt_soonest_10 = renderDataTable({
     mpo_df_alt_soonest_10 %>%
+      mutate(`Exp. Update` = ifelse(is.na(`Exp. Update`), "No Data", `Exp. Update` %>%  
+                                      as.character())) %>% 
       datatable(
         escape = F,
         selection = "single",
@@ -860,23 +862,23 @@ server <- function(input, output) {
   })
   
   #mpo_tracking_plot=====
-  output$mpo_plot_status = renderPlot({
-    mpo_df %>% 
-      filter(Type != "LRP") %>% 
-      ggplot() + 
-      geom_tile(aes(Type, Acronym, fill = `Document\nStatus:`), color = "black") + 
-      labs(x = "", y = "", fill = "Document Status:") + 
-      scale_fill_viridis_d() +
-      theme +
-      theme(legend.position="bottom")
-  })
+  # output$mpo_plot_status = renderPlot({
+  #   mpo_df %>% 
+  #     ggplot() + 
+  #     geom_tile(aes(Type, Acronym, fill = `Document\nStatus:`), color = "black") + 
+  #     labs(x = "", y = "", fill = "Document Status:") + 
+  #     scale_fill_viridis_d() +
+  #     theme +
+  #     theme(legend.position="bottom")
+  # })
   
   #mpo_timeline_plot=====
   output$mpo_plot_timeline = renderTimevis({
     mpo_timeline = mpo_df_alt %>%
       mutate(id = as.numeric(rownames(.)), 
              end = NA, 
-             Date = Date + months(as.numeric(mpo_df_alt$Update_time)*12),
+             Date = (Date + months(as.numeric(mpo_df_alt$Update_time)*12)) %>%  
+               floor_date("year"),
              qtr = Date %>%  floor_date("quarter"),
              group = Type,
              start = Date,
@@ -887,6 +889,7 @@ server <- function(input, output) {
       group_by(qtr) %>%
       mutate(order = cumsum(order)) %>%
       filter(Type != "LRP") %>% 
+      filter(Type != "TIP") %>%
       filter(!is.na(Type)) %>%  
       filter(!is.na(start)) %>%  
       select(end, qtr, group, content, order, text, start)
@@ -921,6 +924,8 @@ server <- function(input, output) {
     map_ready %>%
       select(processed_name, group, notes, src_url) %>%
       set_names(c("Layer", "Layer Group", "Notes", "Source URL")) %>%
+      data.table() %>%  
+      .[is.na(`Layer Group`), `Layer Group` := "Census"] %>% 
       datatable(
         escape = F,
         fillContainer = T,
