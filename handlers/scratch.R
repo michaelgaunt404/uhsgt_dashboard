@@ -58,11 +58,14 @@
 #   st_write("corrdior_buffer/corrdior_buffer.shp", 
 #            append = F)
 #   mapview()
-# readOGR('corrdior_buffer', 
-#         'corrdior_buffer') %>%
-#   st_as_sf() %>%   
-#   mapview()
-
+quick_shape = readOGR('./application_shapefiles/FerryRoutes',
+        'FerryRoutes') %>%
+  st_as_sf() %>%
+  # select(-DatSorc) %>%
+  # write_sf(FerryRoutes., "./application_shapefiles/UHSR_Stations (studied)/UHSR_Stations (studied).shp")
+  mapview()
+ 
+quick_shape %>%  .[,c(1:4)] %>%  mapview()
 
 
 #install.packages("rgdal) #for inport/outport
@@ -101,3 +104,10 @@ install.packages("timevis")
 install.packages("mapedit")
 install.packages("brio")
 install.packages("lwgeom")
+
+
+
+
+
+
+

@@ -1,11 +1,11 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Utility script for all US_Census layers 
+# Utility script for all US and CA Census layers 
 #
 # By: mike gaunt, michael.gaunt@wsp.com
 #
 # README: this script gets us census data 
-#-------- it uses tidycensus and tigris packages
+#-------- it uses tidycensus, cancensus,  and tigris packages
 #-------- it is not robust enough to full automate the process
 #-------- seperate opertions are perfromed for layers with/without state level fidelity
 #-------- also seperate write-out for Tribal lands since only produces tabular data which needs to be merged with spatail
@@ -18,6 +18,10 @@
 library(tigris)
 library(tidycensus)
 library(cancensus)
+
+# install.packages("tigris")
+# install.packages("tidycensus")
+# install.packages("cancensus")
 
 #path
  # # library(magrittr)
@@ -87,7 +91,7 @@ tmp_sep = readxl::read_xlsx("data_source_list.xlsx", sheet = "tidycensus") %>%
          data_spatial = list(data_spatial_or, data_spatial_wa) %>% 
            pmap(function(x,y)
              rbindlist(list(x,y)) 
-             ))
+           ))
 
 wirte_out_file_names = list(c(tmp$processed_name, tmp_sep$processed_name),
                             c(tmp$data_spatial, tmp_sep$data_spatial)) 
@@ -108,7 +112,7 @@ list(wirte_out_file_names[[1]],
   pmap(function(x, y) 
     y %>% st_as_sf() %>%  
       st_write(., paste0(path, x, "/", x, ".shp"))
-         )
+  )
 
 #Tribal Lands===================================================================
 #tidycensus does not have first peoples layer so we have to use 'tigris' and merge with shapefiles
@@ -161,8 +165,14 @@ st_write(first_peoples_metrics_sf,
 #Canada Census Layers===========================================================
 options(cancensus.cache_path = 'ca_census_cache')
 options(cancensus.api_key = 'CensusMapper_a81cdd3e133a13fa5dd3e8b67652ad70')
+# for questions go to here: https://cran.r-project.org/web/packages/cancensus/vignettes/cancensus.html
+
+# var = list_census_vectors("CA16")
+# var %>% view()
+
 data_ca_census = readxl::read_xlsx("data_source_list.xlsx", sheet = "ca_census") %>%  
-  janitor::remove_empty(c("cols", "rows"))
+  janitor::remove_empty(c("cols", "rows"))  %>%  
+  filter(exclude != "Y")
 
 #pulls census level data for vancouver and abbotsford CMAs
 census_data_CT <- get_census(dataset='CA16', 

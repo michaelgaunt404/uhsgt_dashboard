@@ -12,7 +12,7 @@
 
 #path and data set-up~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(magrittr)
+# library(magrittr)
 
 # if (!exists("BEING_SOURCED_FROM_SOMEWHERE")){
   # setwd("~/")
@@ -33,17 +33,29 @@ library(magrittr)
 
 #gets data from 'data source list' 
 {
+#bind_rows code to build processed_shape_files hard codes layers
+#these layers are either census or layers used to make other layers that are not included 
+#new filter(to_map_ready == "Y") added to fit process better
 processed_shape_files = read_xlsx('data_source_list.xlsx',
                                   sheet = "manual") %>%
-  data.table() %>%
-  .[,.(processed_name, src_url)] %>%  
-  remove_empty(c("cols", "rows"))
-
-processed_shape_files = list.files("application_shapefiles") %>%
-  data.table(processed_name = .) %>%
-  merge.data.table(., processed_shape_files,
-                   by = "processed_name", all.x = T) %>%
-  .[!is.na(src_url),`:=`(data_layer_info = paste0('<a href = "', src_url, '"> Link to source </a>'))]
+  remove_empty(c("cols", "rows")) %>%
+  mutate(data_layer_info = paste0('<a href = "', src_url, '"> Link to source </a>') %>% 
+           ifelse(str_detect(., '"NA'),
+                  NA, .)) %>% 
+  filter(to_map_ready == "Y") %>%
+  select(processed_name, data_layer_info) %>%
+  bind_rows(.,  data.frame(processed_name = c("CA_Census", "US_Census"), 
+                           data_layer_info = NA)) %>%  
+  filter(processed_name != "Regional_Planning", 
+         processed_name != "US_Cities") %>%  #these have to be removed since they are in the list but are made from the different state layers
+  arrange(processed_name)
+  
+# processed_shape_files$processed_name
+# processed_shape_files = list.files("application_shapefiles") %>%
+#   data.table(processed_name = .) %>%
+#   merge.data.table(., processed_shape_files,
+#                    by = "processed_name") %>%
+#   .[!is.na(src_url),`:=`(data_layer_info = paste0('<a href = "', src_url, '"> Link to source </a>'))]
 
 half_polished = list(processed_shape_files$processed_name,
                      processed_shape_files$data_layer_info) %>%
@@ -52,14 +64,14 @@ half_polished = list(processed_shape_files$processed_name,
       st_read() %>%
       mutate(`Data Source` = y))
 }
-
+ 
 #Manual Processing
 {
 #US Census======================================================================
-tmp_col_list = c('T.P1.', "Wrkdt", "WrkdC", "Nfxdw", "Wrkdp", "Pblct", "T.M1.", "Ctv.d", "Ctv.p",  "Walkd", "Bcycl", "Othrm")
+# tmp_col_list = c('T.P1.', "Wrkdt", "WrkdC", "Nfxdw", "Wrkdp", "Pblct", "T.M1.", "Ctv.d", "Ctv.p",  "Walkd", "Bcycl", "Othrm")
 tmp_index = which(processed_shape_files$processed_name == "CA_Census")
 half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
-  select(-tmp_col_list, tmp_col_list) %>% 
+  # select(-tmp_col_list, tmp_col_list) %>% 
   quick_col_arrange() 
 
 #CA Census======================================================================
@@ -71,7 +83,7 @@ half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
 tmp_index = which(processed_shape_files$processed_name == "US_Railroads")
 half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>% 
   filter(is.na(yardname)) %>%  
-  filter(direction > 0) %>% 
+  filter(direction > 0) %>%
   quick_col_arrange() 
 
 #CA Railroads======================================================================
@@ -117,7 +129,7 @@ half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
            fct_relevel(c("Democrat", "Republican")),
          `Data Source` = Source) %>%
   quick_col_arrange() %>%
-  select(-Source)
+  select(District, Congress, Name, Party, Phone, `Data Source`)
 
 #state house information============================================================
 tmp_file = read_xlsx("US_House_Reps.xlsx", sheet = "wa_house") %>%
@@ -202,7 +214,7 @@ half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%
   quick_col_arrange()
 
 #Clean up intermodal locations tomorrow morning!!!!=====================================
-tmp_index = which(processed_shape_files$processed_name == "Multimodal_Stations")
+tmp_index = which(processed_shape_files$processed_name == "US_Multimodal_Stations")
 half_polished[tmp_index][[1]] = half_polished[tmp_index][[1]] %>%  
   modify_at(c("mode_bus",   "mode_air", "mode_rail",
               "mode_ferry", "mode_bike"), as.character) %>%
@@ -281,7 +293,7 @@ merged_mpos = half_polished[tmp_index][[1]] %>%
          Area = st_area(.) %>%
            units::set_units(mile^2)) %>%  
   rename(`Data Source` = "data_source") %>%
-  select(name, Web, RTP, CEDS, `Pub. Date_RTP`, `Pub. Date_CEDS`, Area, `Data Source`, geometry)
+  select(name, Web, RTP, CEDS, `Pub. Date_RTP`, `Pub. Date_CEDS`, Area, `Data Source`)
 
 # merged_mpos = st_join(merged_mpos, tmp_pop) %>%
 #     group_by(name) %>%

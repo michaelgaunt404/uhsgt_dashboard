@@ -15,7 +15,6 @@ ui = dashboardPagePlus(
   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   sidebar = dashboardSidebar(width  = 200,
                              sidebarMenu(id = "tabs",
-                                         
                                          tags$style(HTML(box_styling)),
                                          # menuItem("Map Dashboard", tabName = "map_dahsboard", icon = icon("map"), 
                                          #          startExpanded = F),

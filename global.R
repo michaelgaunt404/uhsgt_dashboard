@@ -13,7 +13,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(rgdal) #for input/output
 library(sf)
-library(mapview)
+library(mapview) #make sure package is V2.7.8 - resource path error will trigger if it isn't
 library(leaflet)
 library(leafpop)
 library(units)
@@ -58,7 +58,7 @@ corrdior_buffer = readOGR("corrdior_buffer",
 
 #initializes custom funcitons~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-operation_manual = "https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.html"
+# operation_manual = "https://github.com/michaelgaunt404/uhsgt_dashboard/blob/main/Operation_Manual.html"
 
 inline = function (x) {
   tags$div(style="display:inline-block;", x)
@@ -157,13 +157,13 @@ color_previewer = function(n){
   )
 }
 
-data_extractor = function(data, name){
-  filepath_tmp = paste0("C:/Users/USMG687637/Documents/040_projects/UHSR_jursidcition_map/output/", name, ".csv") 
-  data %>%
-    data.table() %>% 
-    .[,-c("geometry")] %>% 
-    fwrite(filepath_tmp)
-}
+# data_extractor = function(data, name){
+#   filepath_tmp = paste0("C:/Users/USMG687637/Documents/040_projects/UHSR_jursidcition_map/output/", name, ".csv") 
+#   data %>%
+#     data.table() %>% 
+#     .[,-c("geometry")] %>% 
+#     fwrite(filepath_tmp)
+# }
 
 quick_col_arrange = function(data) {
   data %>%

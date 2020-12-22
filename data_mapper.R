@@ -24,6 +24,7 @@
 #gets files from source list~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 processed_shape_files = read_xlsx('data_source_list.xlsx', 
                                   sheet = "manual") %>%  
+  filter(to_map_ready == "Y") %>% 
   data.table() %>%  
   .[, .(processed_name, selection, selected_new, zcol, notes, src_url, group)] %>%  
   bind_rows(., 
@@ -56,32 +57,38 @@ census_selection_index = processed_shape_files %>%
   data.table()
 
 #makes census index object - only takes from the "CA_Census" group
-ca_census_selection_index = processed_shape_files %>% 
-  .[processed_name == "CA_Census",.(processed_name, name)] %>% 
-  mutate(var_name = processed_shape_files %>%  
-           filter(processed_name == "CA_Census") %>%  
-           select(selected_new) %>%  
-           .[[1]] %>%  
-           .[1] %>%  
-           str_split(", ") %>%  
-           .[[1]] %>%  
-           .[-c(1, 2)]) %>% 
-  unique() %>%
-  bind_rows(., .) %>%
+tmp = read_xlsx('data_source_list.xlsx', 
+          sheet = "ca_census")
+
+ca_census_selection_index = tmp$selected_new[1] %>%  
+  str_split(",") %>% .[[1]] %>% 
+  str_trim() %>%  .[-c(1:2)] %>%  
+  data.frame(var_name = ., 
+             processed_name = "CA_Census",
+             name = c(tmp %>%  
+                        .[tmp$exclude != "Y", "name"])
+             ) %>%  
+  bind_rows(., .) %>% 
   data.table() %>% 
-  .[duplicated(.),`:=`(name = "All")]
+  .[duplicated(.),`:=`(name = "All")] %>%  
+  modify(as.character)
+
 
 #cleans object of unneeded columns after census object creation (above)
 processed_shape_files = processed_shape_files %>%  
   select(-name, -var_name) %>%  
   unique()
 
+# processed_shape_files %>%  
+#   filter(str_detect(processed_name, "Legis"))
+# processed_shape_files$processed_name %>%  lapply(charToRaw) %>% charToRaw( )
+
 #MAP DATA=======================================================================
 #checks files that have been processed and put into "map_ready" folder
 #merges with what is in "data_source" this is unneeded if info matches
 #essentially a holdover from an earlier version that was less stable
 #this operation formats and adds some new columns 
-map_ready = list.files("map_ready") %>%  
+map_ready = list.files("map_ready") %>%
   data.table(processed_name = .) %>% 
   merge.data.table(., processed_shape_files , 
                    by = "processed_name", all.x = T) %>% 
@@ -96,7 +103,14 @@ map_ready = list.files("map_ready") %>%
          src_url = ifelse(!is.na(src_url), 
                           str_glue('<a href="{src_url}" target="popup" onclick="window.open("{src_url}","name","width=600,height=400")">Link to data source</a>'),
                           "No Data")) %>%  
+  select(processed_name, selected_new, zcol, group) %>% 
   unique() 
+
+# map_ready$processed_name
+# map_ready = map_ready[15, ]
+# x = map_ready$processed_name
+# y = map_ready$selected_new
+# z = map_ready$zcol %>%  str_to_title()
 
 #extracts all the shapefiles and performs mapping operation 
 map_files = list(map_ready$processed_name,
@@ -122,6 +136,8 @@ map_files = list(map_ready$processed_name,
               popup = popupTable(., zcol = -c(ncol(.)-1, ncol(.))))
   )
 
+
+
 #extracts all the shapefiles and keeps them in tabular form
 map_files_dfs = list(map_ready$processed_name,
                      map_ready$selected_new) %>%
@@ -140,9 +156,8 @@ map_files_dfs = list(map_ready$processed_name,
   )
 
 #SECTION: CENSUS_SUBSET_METRICS===============================================
-
-tmp_ca = which(map_ready$processed_name %in% "US_Census")
-tmp_us = which(map_ready$processed_name %in% "CA_Census")
+tmp_us = which(map_ready$processed_name %in% "US_Census")
+tmp_ca = which(map_ready$processed_name %in% "CA_Census")
 tmp_reg = which(map_ready$processed_name %in% "Regional_Planning")
 
 #us_census====

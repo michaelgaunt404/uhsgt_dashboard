@@ -201,7 +201,8 @@ server <- function(input, output) {
   
   #us_census inputs=====
   ca_index_census_select_columns = reactive({
-    ca_index_census_select_columns = ca_census_selection_index[name %in% input$ca_census_column_filter, var_name] %>%  
+    print("Stop")
+    ca_index_census_select_columns = ca_census_selection_index[ca_census_selection_index$name %in% input$ca_census_column_filter, var_name] %>%  
       str_to_title()
   })
 

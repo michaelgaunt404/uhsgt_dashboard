@@ -1,16 +1,10 @@
 ---
 title: "![](./www/flatart_long.jpg){width=9in} Maintenance Manual"
 author: 
-  - "Current Operator and Maintainer: XXXX - contact@site.com"
+  - "Current Operator and Maintainer: Wenjuan Zhao - contact gmal"
   - "Original Developer: Michael Gaunt - mike.gaunt@wsp.com"
 date: '2020-12-15'
 output:
-  word_document:
-    toc: yes
-    toc_depth: '2'
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
   html_document:
     number_sections: yes
     theme: cerulean
@@ -19,6 +13,12 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  word_document:
+    toc: yes
+    toc_depth: '2'
 ---
 
 ```{r setup, include=FALSE}
@@ -56,7 +56,7 @@ The UHSGT dashboard was made using the R language and Shiny dashboard framework.
     + This site is currently being used to publish and link to the Operation Manual 
       + This document (and other documents in general) do not need to be published on Github
       + Supporting documents can be published on a google drive but the links must be changed in the code
-
+      
 # Files and Directories 
 Please see the below image that details the dashboards files. The ensuing bullet list describes the items and folders as seen in the image.     
 
